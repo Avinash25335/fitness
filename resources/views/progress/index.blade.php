@@ -47,19 +47,33 @@
     {{-- ROW 2 ─ AI COACH PANEL                                                 --}}
     {{-- ═══════════════════════════════════════════════════════════════════════ --}}
     <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-brand/20 rounded-[2.5rem] p-10">
-        <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded-xl bg-brand/20 flex items-center justify-center text-brand shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                </svg>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
+            <div class="flex items-center gap-3 flex-1">
+                <div class="w-10 h-10 rounded-xl bg-brand/20 flex items-center justify-center text-brand shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black text-brand uppercase tracking-[0.2em]">AI Performance Coach</span>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ count($aiInsights) }} personalised insight(s) — Workout · Diet · Recovery</p>
+                </div>
             </div>
-            <div>
-                <span class="text-[10px] font-black text-brand uppercase tracking-[0.2em]">AI Performance Coach</span>
-                <p class="text-xs text-gray-500 mt-0.5">Rule-based intelligence engine — {{ count($aiInsights) }} insight(s) generated</p>
+            {{-- Filter tabs --}}
+            <div class="flex gap-2 flex-wrap" id="aiFilterBtns">
+                @php $filterCategories = ['All', 'Consistency', 'Goal Analysis', 'Diet AI', 'Recovery', 'Strength', 'Volume Balance', 'Streak']; @endphp
+                @foreach($filterCategories as $f)
+                <button onclick="filterInsights('{{ $f }}')"
+                    class="ai-filter-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all
+                           {{ $f === 'All' ? 'bg-brand text-white' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white' }}"
+                    data-filter="{{ $f }}">
+                    {{ $f }}
+                </button>
+                @endforeach
             </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            @foreach($aiInsights as $insight)
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="aiInsightsGrid">
+            @foreach($aiInsights as $idx => $insight)
             @php
                 $borderColor = match($insight['type']) {
                     'success' => 'border-brand/30 bg-brand/5',
@@ -71,9 +85,26 @@
                     'warning' => 'bg-orange-500/20 text-orange-400',
                     default   => 'bg-blue-500/20 text-blue-400',
                 };
+                $catColor = match($insight['category'] ?? 'General') {
+                    'Diet AI'        => 'bg-emerald-500/20 text-emerald-400',
+                    'Recovery'       => 'bg-cyan-500/20 text-cyan-400',
+                    'Goal Analysis'  => 'bg-purple-500/20 text-purple-400',
+                    'Strength'       => 'bg-yellow-500/20 text-yellow-400',
+                    'Volume Balance' => 'bg-red-500/20 text-red-400',
+                    'Streak'         => 'bg-orange-500/20 text-orange-400',
+                    default          => 'bg-gray-500/20 text-gray-400',
+                };
             @endphp
-            <div class="border {{ $borderColor }} rounded-2xl p-5 space-y-3">
-                <span class="inline-block px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $badgeColor }}">{{ strtoupper($insight['type']) }}</span>
+            <div class="ai-card border {{ $borderColor }} rounded-2xl p-5 space-y-3 transition-all"
+                 data-category="{{ $insight['category'] ?? 'General' }}">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="inline-block px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $badgeColor }}">
+                        {{ strtoupper($insight['type']) }}
+                    </span>
+                    <span class="inline-block px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $catColor }}">
+                        {{ $insight['category'] ?? 'General' }}
+                    </span>
+                </div>
                 <p class="text-sm text-gray-300 leading-relaxed font-medium">{{ $insight['message'] }}</p>
             </div>
             @endforeach
@@ -279,6 +310,23 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// ── AI Insight Filter ──────────────────────────────────────────────────────────
+function filterInsights(filter) {
+    document.querySelectorAll('.ai-filter-btn').forEach(btn => {
+        const isActive = btn.dataset.filter === filter;
+        btn.className = btn.className
+            .replace('bg-brand text-white', '')
+            .replace('bg-white/5 text-gray-500', '')
+            .trim();
+        btn.classList.add(...(isActive
+            ? ['bg-brand', 'text-white']
+            : ['bg-white/5', 'text-gray-500']));
+    });
+    document.querySelectorAll('.ai-card').forEach(card => {
+        const show = filter === 'All' || card.dataset.category === filter;
+        card.style.display = show ? '' : 'none';
+    });
+}
 document.addEventListener('DOMContentLoaded', function() {
 
     const CHART_DEFAULTS = {

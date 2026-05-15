@@ -77,6 +77,27 @@ class ProgressController extends Controller
 
         $totalCaloriesBurned = $allSessions->sum('calories_burned');
 
+        // ── Days Since Last Workout ────────────────────────────────────────────
+        $lastSession = $allSessions->last();
+        $daysSinceLastWorkout = $lastSession
+            ? Carbon::parse($lastSession->completed_at)->diffInDays(now())
+            : 999;
+
+        // ── Missed Muscle Groups (this week) ──────────────────────────────────
+        $masterGroups = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core'];
+        $sessionsThisWeek = $allSessions->filter(
+            fn($s) => Carbon::parse($s->completed_at)->isCurrentWeek()
+        );
+        $trainedGroups = [];
+        foreach ($sessionsThisWeek as $ws) {
+            foreach ($ws->exerciseLogs()->with('exercise')->get() as $log) {
+                $muscle = $log->exercise->muscle_group ?? null;
+                if ($muscle) $trainedGroups[] = ucfirst(strtolower($muscle));
+            }
+        }
+        $trainedGroups = array_unique($trainedGroups);
+        $missedMuscleGroups = array_values(array_filter($masterGroups, fn($g) => !in_array($g, $trainedGroups)));
+
         // Weekly workout counts for chart (last 8 weeks)
         $weeklyWorkouts = [];
         $weeklyCalories = [];
@@ -135,14 +156,17 @@ class ProgressController extends Controller
         // ── AI Coach ──────────────────────────────────────────────────────────
         $coach   = new AICoachService();
         $aiInsights = $coach->analyze([
-            'workouts_this_week'   => $workoutsThisWeek,
-            'workouts_last_week'   => $workoutsLastWeek,
-            'streak'               => $streak,
-            'total_workouts'       => $stats->total_workouts ?? 0,
-            'goal'                 => $profile->goal ?? null,
-            'weight_trend'         => $weightTrend,
-            'avg_calories_per_week' => count($weeklyCalories) > 0 ? round(array_sum($weeklyCalories) / count(array_filter($weeklyCalories))) : 0,
-            'prs_broken_this_week' => $prsBrokenThisWeek,
+            'workouts_this_week'             => $workoutsThisWeek,
+            'workouts_last_week'             => $workoutsLastWeek,
+            'streak'                         => $streak,
+            'total_workouts'                 => $stats->total_workouts ?? 0,
+            'goal'                           => $profile->goal ?? null,
+            'weight_trend'                   => $weightTrend,
+            'avg_calories_per_week'          => count($weeklyCalories) > 0 ? round(array_sum($weeklyCalories) / max(1, count(array_filter($weeklyCalories)))) : 0,
+            'prs_broken_this_week'           => $prsBrokenThisWeek,
+            'missed_muscle_groups'           => $missedMuscleGroups,
+            'days_since_last_workout'        => $daysSinceLastWorkout,
+            'total_workout_duration_this_week' => $sessionsThisWeek->sum('duration') / 60, // minutes
         ]);
 
         // ── Old-style single insight (for backwards compat) ────────────────────
