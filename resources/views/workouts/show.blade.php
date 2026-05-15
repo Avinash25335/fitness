@@ -1,104 +1,593 @@
 @extends('layouts.dashboard')
 
 @section('page-title', $workout->title)
-@section('page-subtitle', 'Workout Plan Details')
+@section('page-subtitle', 'Interactive Workout Session')
 
 @section('content')
-<div class="space-y-6 fade-up">
-    <!-- Back -->
-    <a href="{{ route('workouts.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        Back to Workouts
-    </a>
+<!-- Confetti & Toast Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Main Info -->
-        <div class="lg:col-span-2 space-y-5">
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6 hover:scale-105 hover:shadow-green-500/10 transition-all duration-300">
-                <div class="flex items-start justify-between mb-6">
-                    <div>
-                        <span class="text-xs font-bold px-3 py-1 rounded-full {{ $workout->level === 'beginner' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($workout->level === 'intermediate' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20') }} uppercase mb-3 inline-block">{{ $workout->level }}</span>
-                        <h1 class="text-3xl font-extrabold text-white">{{ $workout->title }}</h1>
-                    </div>
-                    <div class="text-right shrink-0">
-                        <p class="text-2xl font-extrabold text-brand">{{ $workout->duration_weeks }}</p>
-                        <p class="text-xs text-gray-500">Weeks</p>
-                    </div>
+<div class="space-y-6 fade-up relative">
+    
+    <!-- SUMMARY SCREEN -->
+    <div id="summaryScreen" class="hidden fixed inset-0 z-[200] bg-gray-900/90 backdrop-blur-xl flex items-center justify-center p-6">
+        <div class="bg-gray-800 border border-white/10 rounded-[3rem] p-12 max-w-2xl w-full shadow-[0_20px_60px_rgba(0,0,0,0.5)] text-center space-y-10 scale-95 transition-transform duration-500" id="summaryContent">
+            <div class="space-y-4">
+                <div class="w-24 h-24 bg-brand/20 rounded-full flex items-center justify-center text-brand mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                 </div>
-
-                <p class="text-gray-400 leading-relaxed mb-8">{{ $workout->description }}</p>
-
-                @auth
-                    <form action="{{ route('workout-logs.store') }}" method="POST" class="inline">
-                        @csrf
-                        <input type="hidden" name="workout_plan_id" value="{{ $workout->id }}">
-                        <input type="hidden" name="date" value="{{ date('Y-m-d') }}">
-                        <input type="hidden" name="status" value="completed">
-                        <button type="submit" class="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 hover:scale-105 shadow-lg transition-all duration-300 text-sm font-bold flex items-center">
-                            <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Mark as Completed
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 hover:scale-105 shadow-lg transition-all duration-300 text-sm inline-block font-bold">Login to Start</a>
-                @endauth
+                <h2 class="text-5xl font-black text-white tracking-tighter">Session Complete!</h2>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">You dominated today's routine</p>
             </div>
 
-            <!-- Exercise List -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6 hover:scale-105 hover:shadow-green-500/10 transition-all duration-300">
-                <h3 class="font-bold text-white text-base mb-5 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    Exercise List ({{ $workout->exercises->count() }} exercises)
-                </h3>
-                @if($workout->exercises->isNotEmpty())
-                    <div class="space-y-3">
-                        @foreach($workout->exercises as $i => $exercise)
-                        <div class="flex items-center gap-4 p-4 rounded-xl bg-surface hover:bg-surface-3 transition-all duration-200 group">
-                            <div class="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-bold text-sm shrink-0 group-hover:bg-brand/20 transition">{{ $i + 1 }}</div>
-                            <div class="flex-1">
-                                <p class="font-semibold text-white text-sm">{{ $exercise->name }}</p>
-                                <p class="text-xs text-gray-500 mt-0.5">{{ $exercise->body_part }}</p>
-                            </div>
-                            @if($exercise->sets && $exercise->reps)
-                            <span class="text-xs text-gray-400 bg-surface-2 px-3 py-1.5 rounded-lg border border-border-col">{{ $exercise->sets }}x{{ $exercise->reps }}</span>
-                            @endif
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white/5 p-8 rounded-[2rem] border border-white/5 group hover:border-brand/30 transition-all">
+                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">Total Time</p>
+                    <p id="summaryTime" class="text-3xl font-black text-white tracking-tight">00:00</p>
+                </div>
+                <div class="bg-white/5 p-8 rounded-[2rem] border border-white/5 group hover:border-brand/30 transition-all">
+                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">Exercises</p>
+                    <p id="summaryExercises" class="text-3xl font-black text-white tracking-tight">0 / 0</p>
+                </div>
+                <div class="bg-white/5 p-8 rounded-[2rem] border border-white/5 group hover:border-brand/30 transition-all">
+                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">XP Earned</p>
+                    <p id="summaryXP" class="text-3xl font-black text-brand tracking-tight">+0 XP</p>
+                </div>
+                <div class="bg-white/5 p-8 rounded-[2rem] border border-white/5 group hover:border-brand/30 transition-all">
+                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">Calories</p>
+                    <p id="summaryCalories" class="text-3xl font-black text-orange-500 tracking-tight">0 <span class="text-xs">KCAL</span></p>
+                </div>
+            </div>
+
+            <a href="{{ route('dashboard') }}" class="block w-full bg-brand text-white py-6 rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all hover:scale-[1.02] active:scale-95">
+                Finish & Return to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Back Navigation -->
+    <div class="flex items-center justify-between py-4">
+        <a href="{{ route('workouts.index') }}" class="group inline-flex items-center gap-3 text-sm font-black text-white hover:text-brand transition-all bg-white/5 hover:bg-white/10 px-6 py-3 rounded-2xl border border-white/5">
+            <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            BACK TO DASHBOARD
+        </a>
+        <div class="flex items-center gap-4">
+            <span id="dayBadge" class="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 border border-brand/10 px-4 py-2 rounded-xl">DAY 1 OF CYCLE</span>
+            <span id="streakBadge" class="text-[10px] font-black text-orange-400 uppercase tracking-widest bg-orange-500/5 border border-orange-500/10 px-4 py-2 rounded-xl">🔥 STREAK: 0</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content Area -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Hero Card -->
+            <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-12 opacity-5">
+                    <svg class="w-48 h-48 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+
+                <div class="relative z-10 space-y-8">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                                {{ strtoupper($workout->level) }} SESSION
+                            </span>
+                            <span class="text-[10px] font-black text-brand uppercase tracking-widest px-4 py-1.5 rounded-full bg-brand/5 border border-brand/10" id="liveIndicator">
+                                • TRACKING LIVE
+                            </span>
                         </div>
-                        @endforeach
                     </div>
-                @else
-                    <div class="text-center py-8 text-gray-600 text-sm italic">Exercise details will be added soon.</div>
-                @endif
+
+                    <div id="exerciseHero">
+                        <h1 id="activeExerciseName" class="text-5xl font-black text-white tracking-tighter">{{ $workout->title }}</h1>
+                        <p id="activeExerciseSub" class="text-sm text-gray-400 font-bold uppercase tracking-widest mt-2">Tap Start to begin your session</p>
+                    </div>
+
+                    <div class="pt-4 flex flex-col sm:flex-row items-center gap-10">
+                        <!-- Dynamic Status -->
+                        <div class="flex flex-col gap-3">
+                            <button id="startWorkoutBtn" data-plan-id="{{ $workout->id }}"
+                                class="bg-green-500 text-white px-10 py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-green-600 shadow-[0_10px_30px_rgba(34,197,94,0.3)] transition-all active:scale-95 flex items-center gap-3">
+                                <span id="btnText">⚡ Start Session</span>
+                            </button>
+                            <button id="endSessionBtn" class="hidden text-[10px] font-black text-red-500 uppercase tracking-widest hover:text-red-400 transition-colors">
+                                [ End Session Early ]
+                            </button>
+                        </div>
+
+                        <!-- Progress Analytics -->
+                        <div class="flex-1 w-full space-y-4">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Session Progress</p>
+                                    <h2 id="progressText" class="text-4xl font-black text-white">0%</h2>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-white font-black" id="countText">0 / {{ $workout->exercises->count() }}</p>
+                                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Exercises Logged</p>
+                                </div>
+                            </div>
+                            <div class="progress-bar w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                <div id="progressBar" class="h-full bg-brand transition-all duration-500 shadow-[0_0_20px_rgba(34,197,94,0.5)]" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Exercise Curriculum -->
+            <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10 space-y-8">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-black text-white tracking-tight">Today's Routine</h3>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5" id="exerciseList">
+                    @foreach($workout->exercises as $i => $exercise)
+                    <div class="exercise-item-container relative group" id="ex-container-{{ $exercise->id }}">
+                        <div class="exercise-item flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 rounded-[2rem] border border-white/5 bg-[#151a24] hover:border-white/10 transition-all duration-500 relative overflow-hidden"
+                             data-id="{{ $exercise->id }}"
+                             data-name="{{ $exercise->name }}"
+                             data-sets="{{ $exercise->sets }}"
+                             data-reps="{{ $exercise->reps }}">
+                            
+                            <!-- Custom Styled UI Box -->
+                            <div class="checkbox-ui shrink-0 w-16 h-16 rounded-[1.25rem] bg-white/5 text-gray-500 flex items-center justify-center transition-all duration-300 relative z-10 border border-transparent">
+                                <div class="flex flex-col items-center uncompleted-icon">
+                                    <span class="font-black text-base">{{ $i + 1 }}</span>
+                                    <span class="text-[8px] font-black opacity-40 uppercase tracking-widest">SET</span>
+                                </div>
+                                <div class="completed-icon hidden">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                </div>
+                            </div>
+
+                            <!-- Identity -->
+                            <div class="flex-1 min-w-0 relative z-10">
+                                <h4 class="exercise-name text-xl font-black text-white tracking-tight transition-all duration-500">
+                                    {{ $exercise->name }}
+                                </h4>
+                                <div class="flex items-center gap-3 mt-1.5">
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ $exercise->body_part }}</span>
+                                    <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                    <span class="text-[10px] font-black text-brand uppercase tracking-widest">{{ $exercise->sets }} Sets × {{ $exercise->reps }} Reps</span>
+                                </div>
+                            </div>
+
+                            <!-- Performance Logging -->
+                            <div class="flex items-center gap-4 relative z-10 mt-4 sm:mt-0 log-inputs">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest px-1">Sets</span>
+                                    <input type="number" value="{{ $exercise->sets }}" class="w-14 bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-black text-white focus:border-brand log-sets">
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest px-1">Reps</span>
+                                    <input type="number" value="{{ $exercise->reps }}" class="w-14 bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-black text-white focus:border-brand log-reps">
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest px-1">Weight</span>
+                                    <input type="number" placeholder="--" class="w-14 bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-black text-white focus:border-brand log-weight">
+                                </div>
+                            </div>
+
+                            <!-- Trigger -->
+                            <div class="shrink-0 ml-2">
+                                <button class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-600 hover:text-brand transition-all complete-trigger">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
         </div>
 
-        <!-- Sidebar Info -->
-        <div class="space-y-5">
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6 hover:scale-105 hover:shadow-green-500/10 transition-all duration-300">
-                <h3 class="font-bold text-white text-sm mb-4">Plan Overview</h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center py-2 border-b border-border-col/50">
-                        <span class="text-xs text-gray-500">Duration</span>
-                        <span class="text-sm font-semibold text-white">{{ $workout->duration_weeks }} Weeks</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-border-col/50">
-                        <span class="text-xs text-gray-500">Difficulty</span>
-                        <span class="text-sm font-semibold text-white capitalize">{{ $workout->level }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2">
-                        <span class="text-xs text-gray-500">Exercises</span>
-                        <span class="text-sm font-semibold text-white">{{ $workout->exercises->count() }}</span>
-                    </div>
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- REST TIMER -->
+            <div id="restBox" class="hidden bg-gradient-to-br from-brand/20 to-brand/5 border border-brand/20 rounded-[2.5rem] p-8 text-center animate-pulse shadow-[0_0_40px_rgba(34,197,94,0.1)]">
+                <h3 class="text-sm font-black text-brand uppercase tracking-[0.2em] mb-4">Resting Time</h3>
+                <div class="relative inline-flex items-center justify-center mb-4">
+                    <svg class="w-24 h-24 transform -rotate-90">
+                        <circle cx="48" cy="48" r="44" stroke="currentColor" stroke-width="4" fill="transparent" class="text-white/5"/>
+                        <circle id="restRing" cx="48" cy="48" r="44" stroke="currentColor" stroke-width="4" fill="transparent" class="text-brand" stroke-dasharray="276" stroke-dashoffset="0"/>
+                    </svg>
+                    <span id="restTimer" class="absolute text-3xl font-black text-white">30</span>
                 </div>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Prepare for next set</p>
+                <button id="skipRestBtn" class="mt-6 text-[10px] font-black text-white bg-brand/20 hover:bg-brand px-6 py-2 rounded-full transition-all uppercase tracking-widest">Skip Rest →</button>
             </div>
 
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6 hover:scale-105 hover:shadow-green-500/10 transition-all duration-300 border-l-4 border-l-brand-orange">
-                <div class="flex items-center gap-2 mb-3">
-                    <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <h4 class="text-sm font-bold text-white">Tips</h4>
+            <!-- Session Stats -->
+            <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8 space-y-8">
+                <h3 class="text-sm font-black text-white uppercase tracking-[0.2em]">Session Stats</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-[#151a24] p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Time Elapsed</p>
+                            <p class="text-2xl font-black text-white" id="sessionTimer">00:00</p>
+                        </div>
+                        <button id="pauseBtn" class="hidden w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand hover:bg-brand hover:text-white transition-all group">
+                            <svg id="pauseIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <svg id="resumeIcon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </button>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-400 leading-relaxed">Warm up for 5-10 minutes before starting. Stay hydrated throughout your session and rest 60-90 seconds between sets.</p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    #progressBar { transition: width 0.5s ease; }
+    .exercise-item.active-exercise { @apply border-brand/50 bg-[#1c2331] shadow-[0_0_30px_rgba(34,197,94,0.1)]; }
+    .exercise-item.completed { @apply bg-brand/5 border-brand/30 opacity-70; }
+    .exercise-item.completed .checkbox-ui { @apply bg-brand border-brand shadow-[0_0_20px_rgba(34,197,94,0.4)]; }
+    .exercise-item.completed .uncompleted-icon { display: none; }
+    .exercise-item.completed .completed-icon { display: block; }
+    .exercise-item.completed .exercise-name { @apply text-gray-500 line-through; }
+    .exercise-item.completed .log-inputs { opacity: 0.3; pointer-events: none; }
+</style>
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const startBtn = document.getElementById('startWorkoutBtn');
+    const endBtn = document.getElementById('endSessionBtn');
+    const restBox = document.getElementById('restBox');
+    const restTimerEl = document.getElementById('restTimer');
+    const skipRestBtn = document.getElementById('skipRestBtn');
+    const summaryScreen = document.getElementById('summaryScreen');
+    
+    if (!startBtn) return;
+    
+    const planId = startBtn.dataset.planId;
+    let sessionId = null;
+    let timerInterval = null;
+    let exercises = Array.from(document.querySelectorAll('.exercise-item'));
+    
+    // ✅ PRO ENGINE STATE
+    let currentExerciseIndex = 0;
+    let currentSet = 1;
+    let isResting = false;
+    let restInterval;
+    let restSeconds = 30; // Standard rest
+
+    // ✅ PRO FEEDBACK (VOICE & HAPTIC)
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stop current speech
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.rate = 1.1;
+            msg.pitch = 1;
+            window.speechSynthesis.speak(msg);
+        }
+    }
+
+    function hapticFeedback() {
+        if ('vibrate' in navigator) navigator.vibrate(200);
+    }
+
+    // ✅ LOCAL-FIRST TIMER STATE (The Source of Truth)
+    let startTime = localStorage.getItem(`startTime_${planId}`) ? parseInt(localStorage.getItem(`startTime_${planId}`)) : null;
+    let pausedAt = localStorage.getItem(`pausedAt_${planId}`) ? parseInt(localStorage.getItem(`pausedAt_${planId}`)) : null;
+    let totalPaused = parseInt(localStorage.getItem(`totalPaused_${planId}`)) || 0;
+    let isPausedLocal = localStorage.getItem(`isPaused_${planId}`) === "true";
+
+    // ✅ TIMER ENGINE
+    function startTimer() {
+        if (!startTime) return;
+        clearInterval(timerInterval);
+        
+        document.getElementById('pauseBtn').classList.remove('hidden');
+
+        if (isPausedLocal) {
+            updateUIFrozen();
+            updatePauseUI(true);
+        } else {
+            updatePauseUI(false);
+            runActiveInterval();
+        }
+        
+        if (endBtn) endBtn.classList.remove('hidden');
+    }
+
+    function runActiveInterval() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime - totalPaused) / 1000);
+            updateTimerUI(elapsed < 0 ? 0 : elapsed);
+        }, 1000);
+    }
+
+    function updateUIFrozen() {
+        const effectiveNow = pausedAt || Date.now();
+        const elapsed = Math.floor((effectiveNow - startTime - totalPaused) / 1000);
+        updateTimerUI(elapsed < 0 ? 0 : elapsed);
+    }
+
+    function updatePauseUI(paused) {
+        const pIcon = document.getElementById('pauseIcon');
+        const rIcon = document.getElementById('resumeIcon');
+        if (paused) {
+            pIcon.classList.add('hidden');
+            rIcon.classList.remove('hidden');
+        } else {
+            pIcon.classList.remove('hidden');
+            rIcon.classList.add('hidden');
+        }
+    }
+
+    async function togglePause() {
+        if (!sessionId) return;
+
+        if (!isPausedLocal) {
+            // ACTION: PAUSE
+            clearInterval(timerInterval);
+            pausedAt = Date.now();
+            isPausedLocal = true;
+            
+            localStorage.setItem(`pausedAt_${planId}`, pausedAt);
+            localStorage.setItem(`isPaused_${planId}`, "true");
+            
+            updateUIFrozen();
+            updatePauseUI(true);
+            
+            fetch(`/api/session/pause/${sessionId}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
+            showToast("Paused ⏸️");
+            speak("Session paused");
+        } else {
+            // ACTION: RESUME
+            const pauseDuration = Date.now() - (pausedAt || Date.now());
+            totalPaused += pauseDuration;
+            
+            isPausedLocal = false;
+            pausedAt = null;
+            
+            localStorage.setItem(`totalPaused_${planId}`, totalPaused);
+            localStorage.setItem(`isPaused_${planId}`, "false");
+            localStorage.removeItem(`pausedAt_${planId}`);
+            
+            updatePauseUI(false);
+            runActiveInterval();
+            
+            fetch(`/api/session/resume/${sessionId}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
+            showToast("Resumed ▶️");
+            speak("Resuming workout");
+        }
+    }
+
+    document.getElementById('pauseBtn').addEventListener('click', togglePause);
+
+    function updateTimerUI(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        document.getElementById('sessionTimer').innerText = `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // ✅ REST ENGINE (PRO UPGRADE)
+    function startRestTimer() {
+        if (isResting) return;
+        isResting = true;
+        let timeLeft = restSeconds;
+        
+        restBox.classList.remove('hidden');
+        updateRestRing(1);
+        restTimerEl.innerText = timeLeft;
+        
+        speak("Nice set. Rest started.");
+
+        clearInterval(restInterval);
+        restInterval = setInterval(() => {
+            timeLeft--;
+            restTimerEl.innerText = timeLeft;
+            updateRestRing(timeLeft / restSeconds);
+            
+            // Pro Voice Countdown
+            if (timeLeft <= 3 && timeLeft > 0) {
+                speak(timeLeft.toString());
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(restInterval);
+                isResting = false;
+                restBox.classList.add('hidden');
+                speak("Go!");
+                nextSetOrExercise();
+            }
+        }, 1000);
+    }
+
+    function updateRestRing(percent) {
+        const ring = document.getElementById('restRing');
+        if (!ring) return;
+        ring.style.strokeDashoffset = 276 - (percent * 276);
+    }
+
+    skipRestBtn.addEventListener('click', () => {
+        clearInterval(restInterval);
+        isResting = false;
+        restBox.classList.add('hidden');
+        speak("Ready? Go!");
+        nextSetOrExercise();
+    });
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        localStorage.removeItem(`startTime_${planId}`);
+        localStorage.removeItem(`pausedAt_${planId}`);
+        localStorage.removeItem(`totalPaused_${planId}`);
+        localStorage.removeItem(`isPaused_${planId}`);
+        document.getElementById('pauseBtn').classList.add('hidden');
+    }
+
+    // ✅ WORKOUT LOGIC (PRO ENGINE)
+    async function startSession() {
+        const res = await fetch(`/api/plan/start/${planId}`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': token, 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        
+        // Init Local State
+        startTime = Date.now();
+        totalPaused = 0;
+        isPausedLocal = false;
+        localStorage.setItem(`startTime_${planId}`, startTime);
+        localStorage.setItem(`totalPaused_${planId}`, 0);
+        localStorage.setItem(`isPaused_${planId}`, "false");
+
+        showToast('Session Started! 🏋️');
+        speak("Let's crush this workout. First exercise is " + exercises[0].dataset.name);
+        loadProgress();
+    }
+
+    async function loadProgress() {
+        try {
+            const res = await fetch(`/api/progress/${planId}`);
+            const data = await res.json();
+            sessionId = data.session_id;
+
+            if (sessionId && !startTime && data.started_at) {
+                startTime = data.started_at;
+                totalPaused = (data.total_paused || 0) * 1000;
+                isPausedLocal = data.is_paused;
+                pausedAt = data.paused_at;
+                localStorage.setItem(`startTime_${planId}`, startTime);
+                localStorage.setItem(`totalPaused_${planId}`, totalPaused);
+                localStorage.setItem(`isPaused_${planId}`, isPausedLocal);
+            }
+
+            if (sessionId) {
+                document.getElementById('btnText').innerText = "⚡ Session Active";
+                startBtn.classList.replace('bg-green-500', 'bg-brand');
+                startTimer();
+                updateLocalProgress();
+                findCurrentState(data.completed_exercises);
+                loadExerciseUI();
+            }
+        } catch (err) { console.error("Load Error:", err); }
+    }
+
+    function findCurrentState(completedIds) {
+        if (!completedIds) return;
+        completedIds.forEach(id => {
+            let item = exercises.find(ex => ex.dataset.id == id);
+            if(item) item.classList.add('completed');
+        });
+        const nextIdx = exercises.findIndex(ex => !ex.classList.contains('completed'));
+        currentExerciseIndex = nextIdx === -1 ? exercises.length : nextIdx;
+        currentSet = 1;
+    }
+
+    function loadExerciseUI() {
+        if (currentExerciseIndex >= exercises.length) {
+            finalizeSession();
+            return;
+        }
+
+        exercises.forEach(ex => ex.classList.remove('active-exercise'));
+        const activeEx = exercises[currentExerciseIndex];
+        activeEx.classList.add('active-exercise');
+        activeEx.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        document.getElementById('activeExerciseName').innerText = activeEx.dataset.name;
+        document.getElementById('activeExerciseSub').innerText = `Set ${currentSet} of ${activeEx.dataset.sets}`;
+        
+        // Update the button text to show current set
+        const trigger = activeEx.querySelector('.complete-trigger');
+        if (trigger) {
+            trigger.innerHTML = `<span class="text-[10px] font-black">${currentSet}/${activeEx.dataset.sets}</span>`;
+        }
+    }
+
+    document.querySelectorAll('.complete-trigger').forEach((btn, idx) => {
+        btn.addEventListener('click', async function() {
+            if (!sessionId || idx !== currentExerciseIndex || isResting) return;
+            
+            hapticFeedback();
+            const item = exercises[idx];
+            const maxSets = parseInt(item.dataset.sets);
+
+            if (currentSet < maxSets) {
+                currentSet++;
+                startRestTimer();
+                loadExerciseUI(); // Update UI to show next set
+            } else {
+                // Exercise Fully Complete - Log to server
+                const res = await fetch("/api/exercise/complete", {
+                    method: "POST",
+                    headers: { "X-CSRF-TOKEN": token, "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        session_id: sessionId, 
+                        exercise_id: item.dataset.id,
+                        sets: item.querySelector('.log-sets').value,
+                        reps: item.querySelector('.log-reps').value,
+                        weight: item.querySelector('.log-weight').value
+                    })
+                });
+                if (res.ok) {
+                    item.classList.add('completed');
+                    showToast("Exercise Complete! 🔥");
+                    currentExerciseIndex++;
+                    currentSet = 1;
+                    
+                    if (currentExerciseIndex < exercises.length) {
+                        speak("Exercise complete. Next up, " + exercises[currentExerciseIndex].dataset.name);
+                        startRestTimer();
+                    } else {
+                        finalizeSession();
+                    }
+                    updateLocalProgress();
+                }
+            }
+        });
+    });
+
+    function nextSetOrExercise() {
+        loadExerciseUI();
+        if (currentExerciseIndex < exercises.length) {
+            speak("Start set " + currentSet);
+        }
+    }
+
+    function updateLocalProgress() {
+        const done = document.querySelectorAll('.exercise-item.completed').length;
+        const total = exercises.length;
+        const percent = Math.round((done/total)*100);
+        document.getElementById("progressBar").style.width = percent + "%";
+        document.getElementById("progressText").innerText = percent + "%";
+        document.getElementById("countText").innerText = `${done} / ${total}`;
+    }
+
+    async function finalizeSession() {
+        const res = await fetch(`/api/session/complete/${sessionId}`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': token }
+        });
+        const data = await res.json();
+        stopTimer();
+        speak("Workout complete. Extraordinary effort today athlete.");
+        document.getElementById('summaryTime').innerText = document.getElementById('sessionTimer').innerText;
+        document.getElementById('summaryCalories').innerText = data.calories || 0;
+        summaryScreen.classList.remove('hidden');
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+
+    function showToast(message) {
+        let toast = document.createElement("div");
+        toast.innerText = message;
+        toast.className = "fixed bottom-10 right-10 z-[100] bg-gray-900 border border-brand/30 text-white px-8 py-4 rounded-2xl shadow-2xl font-black text-[10px] tracking-widest uppercase";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+
+    startBtn.addEventListener('click', startSession);
+    loadProgress();
+});
+</script>
+@endsection
 @endsection
