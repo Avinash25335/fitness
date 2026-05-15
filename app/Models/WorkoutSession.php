@@ -13,6 +13,7 @@ class WorkoutSession extends Model
         'completed',
         'completed_at',
         'duration',
+        'calories_burned',
         'is_paused',
         'paused_at',
         'total_paused_seconds',

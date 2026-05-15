@@ -8,6 +8,7 @@ class Exercise extends Model
 {
     protected $fillable = [
         'name',
+        'muscle_group',
         'body_part',
         'sets',
         'reps',
@@ -20,5 +21,10 @@ class Exercise extends Model
         return $this->belongsToMany(WorkoutPlan::class, 'workout_exercise')
                     ->withPivot('order')
                     ->withTimestamps();
+    }
+
+    public function userProgress()
+    {
+        return $this->hasMany(UserExerciseProgress::class);
     }
 }
