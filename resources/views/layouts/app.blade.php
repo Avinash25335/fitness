@@ -159,7 +159,52 @@
         </div>
     </footer>
 
+    <!-- 🔔 Notification Hub -->
+    <div id="notification-hub" class="fixed top-5 right-5 z-[1000] space-y-4"></div>
+
     <script>
+        // Global Toast System
+        function showToast(msg, type = 'info') {
+            const hub = document.getElementById('notification-hub');
+            const toast = document.createElement("div");
+            
+            const colors = {
+                'info': 'border-brand/30 bg-gray-900',
+                'success': 'border-green-500/30 bg-green-900/20',
+                'achievement': 'border-yellow-500/30 bg-yellow-900/20 shadow-[0_0_20px_rgba(234,179,8,0.2)]'
+            };
+
+            toast.className = `p-4 rounded-2xl border backdrop-blur-md text-white shadow-2xl font-black uppercase text-[10px] tracking-widest animate-slide-up flex items-center gap-4 ${colors[type] || colors.info}`;
+            
+            const icon = type === 'achievement' ? '🏆' : (type === 'success' ? '✅' : '🔔');
+            
+            toast.innerHTML = `<span class="text-xl">${icon}</span> <div>${msg}</div>`;
+            hub.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full', 'transition-all', 'duration-500');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // Check for new notifications via API
+        async function checkNotifications() {
+            try {
+                const res = await fetch('/api/notifications/latest');
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                data.forEach(n => {
+                    showToast(n.data.message, n.data.type === 'achievement' ? 'achievement' : 'info');
+                });
+            } catch (e) {}
+        }
+
+        @auth
+            setInterval(checkNotifications, 10000); // Check every 10s
+        @endauth
+
+        // Theme Toggle Logic
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         

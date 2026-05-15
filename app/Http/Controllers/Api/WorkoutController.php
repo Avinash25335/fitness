@@ -71,7 +71,8 @@ class WorkoutController extends Controller
             ]
         );
 
-        $this->addXP(5);
+        $gamification = new \App\Services\GamificationService();
+        $gamification->awardXp(Auth::user(), 10, 'Exercise Completed');
 
         return response()->json(['success' => true, 'log' => $log]);
     }
@@ -97,35 +98,36 @@ class WorkoutController extends Controller
             // Calorie Calculation (Realistic Upgrade)
             $user = Auth::user();
             $weight = $user->profile->weight ?? 70; // fallback to 70kg
-            if ($user->profile && isset($user->profile->weight)) {
-                $weight = $user->profile->weight;
-            }
             $calories = round(($duration / 60) * (0.035 * $weight));
 
             $session->completed = true;
             $session->completed_at = $now;
             $session->duration = $duration;
             $session->calories_burned = $calories;
-            $session->is_paused = false; // reset pause state on complete
+            $session->is_paused = false; 
             $session->save();
 
             $stats = UserStat::firstOrCreate(['user_id' => $user->id]);
             $stats->increment('streak');
             $stats->increment('total_workouts');
 
-            $this->addXP(20);
+            $gamification = new \App\Services\GamificationService();
+            $result = $gamification->awardXp($user, 50, 'Session Completed');
 
             $userPlan = $session->userPlan;
             $userPlan->increment('current_day');
             
-            // Auto-start next session's started_at if we want (optional, but let's wait for user to click next time)
+            return response()->json([
+                'message' => 'Session completed',
+                'duration' => $session->duration,
+                'calories' => $session->calories_burned,
+                'xp_gained' => 50,
+                'leveled_up' => $result['leveled_up'],
+                'new_level' => $result['new_level']
+            ]);
         }
 
-        return response()->json([
-            'message' => 'Session completed',
-            'duration' => $session->duration,
-            'calories' => $session->calories_burned
-        ]);
+        return response()->json(['message' => 'Session already completed']);
     }
 
     /**
@@ -160,22 +162,7 @@ class WorkoutController extends Controller
         return response()->json($session);
     }
 
-    /**
-     * Internal helper to add XP
-     */
-    private function addXP($points = 10)
-    {
-        $stats = UserStat::firstOrCreate(['user_id' => Auth::id()]);
-        $stats->xp += $points;
-        
-        while ($stats->xp >= ($stats->level * 100)) {
-            $stats->xp -= ($stats->level * 100);
-            $stats->level += 1;
-        }
-        
-        $stats->save();
-        return $stats;
-    }
+    // [Removing addXP internal method as requested]
 
     /**
      * Advanced Analytics (Real Dashboard)

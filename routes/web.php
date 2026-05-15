@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/available-slots/{trainer}', [\App\Http\Controllers\BookingController::class, 'availableSlots']);
         Route::get('/diet', [\App\Http\Controllers\DietPlanController::class, 'getDiet']);
         Route::post('/generate-diet', [\App\Http\Controllers\DietPlanController::class, 'generateDiet']);
+        Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'getLatest']);
     });
 });
 

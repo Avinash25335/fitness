@@ -369,7 +369,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearInterval(restInterval);
                 isResting = false;
                 restBox.classList.add('hidden');
-                speak("Go!");
+                speak("Rest time over! Go!");
+                showToast("Rest time over! 🚀", 'success');
                 nextSetOrExercise();
             }
         }, 1000);
@@ -421,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem(`curEx_${planId}`, 0);
         localStorage.setItem(`curSet_${planId}`, 1);
 
-        showToast('Session Started! 🏋️');
+        showToast('Session Started! 🏋️', 'success');
         speak("Let's go. First exercise is " + exercises[0].dataset.name);
         loadProgress();
     }
@@ -515,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 if (res.ok) {
                     item.classList.add('completed');
-                    showToast("Exercise Complete! 🔥");
+                    showToast("Exercise Complete! 🔥", 'success');
                     currentExerciseIndex++;
                     currentSet = 1;
                     saveInternalState();
@@ -547,16 +548,28 @@ document.addEventListener('DOMContentLoaded', function() {
         speak("Workout complete. Extraordinary effort.");
         document.getElementById('summaryTime').innerText = document.getElementById('sessionTimer').innerText;
         document.getElementById('summaryCalories').innerText = data.calories || 0;
+        document.getElementById('summaryXP').innerText = `+${data.xp_gained || 50} XP`;
+        
+        if (data.leveled_up) {
+            showToast(`LEVEL UP! You are now Level ${data.new_level}! 🎊`, 'achievement');
+            speak(`Level up! You are now level ${data.new_level}`);
+        }
+
         summaryScreen.classList.remove('hidden');
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
 
-    function showToast(message) {
-        let toast = document.createElement("div");
-        toast.innerText = message;
-        toast.className = "fixed bottom-10 right-10 z-[100] bg-gray-900 border border-brand/30 text-white px-8 py-4 rounded-2xl shadow-2xl font-black text-[10px] tracking-widest uppercase";
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2500);
+    // Redirect to global showToast if possible, else use local
+    function showToast(message, type = 'info') {
+        if (window.showToast) {
+            window.showToast(message, type);
+        } else {
+            let toast = document.createElement("div");
+            toast.innerText = message;
+            toast.className = "fixed bottom-10 right-10 z-[100] bg-gray-900 border border-brand/30 text-white px-8 py-4 rounded-2xl shadow-2xl font-black text-[10px] tracking-widest uppercase";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
     }
 
     startBtn.addEventListener('click', startSession);

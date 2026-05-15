@@ -41,13 +41,52 @@ class DashboardController extends Controller
 
         $recommendations = $this->recommendationService->getRecommendations($user);
 
+        // ── Smart Reminders ──────────────────────────────────────────────────
+        $upcomingSessions = \App\Models\TrainerSession::where('user_id', $user->id)
+            ->where('status', 'booked')
+            ->where('session_date', '>=', now()->toDateString())
+            ->orderBy('session_date', 'asc')
+            ->orderBy('time_slot', 'asc')
+            ->take(3)
+            ->get();
+
+        $mealReminder = null;
+        if ($profile && $profile->diet_plan_id) {
+            $mealReminder = "Check your Diet Hub! Don't forget to log your " . 
+                (now()->hour < 12 ? 'Breakfast' : (now()->hour < 17 ? 'Lunch' : 'Dinner'));
+        }
+
+        // --- Interactive System Additions ---
+        $activePrograms = $user->userWorkouts()
+            ->with('workoutPlan')
+            ->where('status', 'in_progress')
+            ->get();
+
+        $completedProgramsCount = $user->userWorkouts()
+            ->where('status', 'completed')
+            ->count();
+
+        // Data for weekly activity chart
+        $weeklyActivity = $user->workoutLogs()
+            ->where('date', '>=', now()->subDays(7))
+            ->orderBy('date', 'asc')
+            ->get()
+            ->groupBy(function($log) {
+                return \Carbon\Carbon::parse($log->date)->format('D');
+            })->map->count();
+
         return view('dashboard.index', [
-            'user'                 => $user,
-            'profile'              => $profile,
-            'workoutLogsThisMonth' => $workoutLogsThisMonth,
-            'recentWorkoutLogs'    => $recentWorkoutLogs,
-            'progressLogs'         => $progressLogs,
-            'recommendations'      => $recommendations,
+            'user'                   => $user,
+            'profile'                => $profile,
+            'workoutLogsThisMonth'   => $workoutLogsThisMonth,
+            'recentWorkoutLogs'      => $recentWorkoutLogs,
+            'progressLogs'           => $progressLogs,
+            'recommendations'        => $recommendations,
+            'activePrograms'         => $activePrograms,
+            'completedProgramsCount' => $completedProgramsCount,
+            'weeklyActivity'         => $weeklyActivity,
+            'upcomingSessions'       => $upcomingSessions,
+            'mealReminder'           => $mealReminder,
         ]);
     }
 

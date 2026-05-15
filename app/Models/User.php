@@ -57,6 +57,32 @@ class User extends Authenticatable
         return $this->hasMany(ProgressLog::class);
     }
 
+    public function userWorkouts()
+    {
+        return $this->hasMany(UserWorkout::class);
+    }
+
+    public function userExerciseProgress()
+    {
+        return $this->hasMany(UserExerciseProgress::class);
+    }
+
+    public function userPlans()
+    {
+        return $this->hasMany(UserPlan::class);
+    }
+
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')
+                    ->withTimestamps();
+    }
+
+    public function stat()
+    {
+        return $this->hasOne(UserStat::class);
+    }
+
 
 
     /**

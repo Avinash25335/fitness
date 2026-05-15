@@ -6,17 +6,64 @@
 @section('content')
 <div class="space-y-10 fade-up">
 
-    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
-    {{-- ROW 1 ─ HERO STATS BAR                                                 --}}
-    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- 🏆 GAMIFICATION DASHBOARD (NEW) --}}
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {{-- Level Progress Card --}}
+        <div class="xl:col-span-2 bg-gradient-to-br from-gray-800 to-gray-900 border border-brand/20 rounded-[2.5rem] p-10 relative overflow-hidden group">
+            <div class="absolute -right-10 -top-10 p-20 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-700">
+                <svg class="w-64 h-64 text-brand" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-3xl bg-brand/10 border-2 border-brand/20 flex flex-col items-center justify-center text-brand">
+                        <span class="text-[10px] font-black uppercase tracking-widest opacity-60">Level</span>
+                        <span class="text-4xl font-black">{{ $user->stat->level ?? 1 }}</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-3xl font-black text-white tracking-tighter">{{ $user->name }}</h2>
+                            <span class="text-xs font-black text-brand uppercase tracking-widest">{{ $user->stat->xp ?? 0 }} XP</span>
+                        </div>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{{ $nextLevelXp - ($user->stat->xp ?? 0) }} XP to Next Level</p>
+                    </div>
+                </div>
+                <div class="h-4 bg-white/5 rounded-full overflow-hidden border border-white/5 p-1">
+                    <div class="h-full bg-gradient-to-r from-brand to-green-400 rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.4)]" style="width: {{ $progressToNextLevel }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Hero Stats Quick-View --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-xl font-black text-white tracking-tight">Personal Records</h4>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Global Ranking: #{{ $leaderboard->search(fn($s) => $s->user_id === $user->id) + 1 ?: '--' }}</p>
+                </div>
+                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl">🏅</div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-8">
+                <div class="bg-white/5 p-4 rounded-2xl">
+                    <p class="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Streak</p>
+                    <p class="text-lg font-black text-orange-400">{{ $streak }} Days</p>
+                </div>
+                <div class="bg-white/5 p-4 rounded-2xl">
+                    <p class="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Badges</p>
+                    <p class="text-lg font-black text-brand">{{ $achievements->count() }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ROW 1 ─ HERO STATS BAR (Existing but refined) --}}
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
         @php
             $heroStats = [
                 ['label' => 'Current Weight',  'value' => $currentWeight.' kg',    'color' => 'text-brand',       'icon' => '⚖️'],
                 ['label' => 'Goal Weight',      'value' => ($goalWeight ?: '--').' '.($goalWeight ? 'kg' : ''), 'color' => 'text-white', 'icon' => '🎯'],
                 ['label' => 'Total Change',     'value' => ($totalChange > 0 ? '+' : '').$totalChange.' kg', 'color' => $totalChange <= 0 ? 'text-brand' : 'text-orange-400', 'icon' => '📉'],
-                ['label' => 'Streak',           'value' => $streak.' days',         'color' => 'text-orange-400',  'icon' => '🔥'],
-                ['label' => 'This Month',       'value' => $workoutsThisMonth.' sessions', 'color' => 'text-purple-400', 'icon' => '🏋️'],
+                ['label' => 'Total Workouts',   'value' => ($user->stat->total_workouts ?? 0).' sessions', 'color' => 'text-purple-400', 'icon' => '🏋️'],
+                ['label' => 'This Month',       'value' => $workoutsThisMonth.' sessions', 'color' => 'text-blue-400', 'icon' => '📅'],
                 ['label' => 'Calories Burned',  'value' => number_format($totalCaloriesBurned).' kcal', 'color' => 'text-red-400', 'icon' => '🔥'],
             ];
         @endphp
@@ -29,17 +76,60 @@
         @endforeach
     </div>
 
-    {{-- Progress Bar --}}
-    <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8 relative overflow-hidden group shadow-[0_10px_40px_rgba(34,197,94,0.07)]">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h3 class="text-lg font-black text-white tracking-tight">Transformation Progress</h3>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Start: {{ $startingWeight }}kg → Goal: {{ $goalWeight ?: '--' }}kg</p>
+    {{-- ROW 2 ─ ACHIEVEMENTS & LEADERBOARD (NEW) --}}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        {{-- Achievements --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10">
+            <div class="flex items-center justify-between mb-10">
+                <div>
+                    <h3 class="text-2xl font-black text-white tracking-tight">Unlocked Badges</h3>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Achievements & Milestones</p>
+                </div>
+                <span class="text-[10px] font-black bg-white/5 text-gray-400 px-4 py-2 rounded-full uppercase tracking-widest">{{ $achievements->count() }} / {{ $allAchievements->count() }}</span>
             </div>
-            <span class="text-3xl font-black text-brand">{{ $progressPercent }}%</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                @foreach($allAchievements as $a)
+                    @php $isUnlocked = $achievements->contains('id', $a->id); @endphp
+                    <div class="flex flex-col items-center text-center group cursor-pointer">
+                        <div class="w-16 h-16 rounded-2xl mb-3 flex items-center justify-center text-2xl transition-all duration-500
+                                   {{ $isUnlocked ? 'bg-brand/10 border-2 border-brand/20 grayscale-0 scale-110 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-white/5 border border-white/5 grayscale opacity-30' }}">
+                            {{ $a->icon }}
+                        </div>
+                        <p class="text-[9px] font-black uppercase tracking-widest transition-colors {{ $isUnlocked ? 'text-white' : 'text-gray-600' }}">{{ $a->title }}</p>
+                    </div>
+                @endforeach
+            </div>
         </div>
-        <div class="h-3 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
-            <div class="h-full bg-gradient-to-r from-brand to-green-400 rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.5)]" style="width: {{ $progressPercent }}%"></div>
+
+        {{-- Leaderboard --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10">
+            <div class="flex items-center justify-between mb-10">
+                <div>
+                    <h3 class="text-2xl font-black text-white tracking-tight">Elite Leaderboard</h3>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Top Athletes by Experience</p>
+                </div>
+                <div class="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500">🏆</div>
+            </div>
+            <div class="space-y-4">
+                @foreach($leaderboard as $index => $stat)
+                <div class="flex items-center justify-between p-4 rounded-2xl transition-all {{ $stat->user_id === $user->id ? 'bg-brand/10 border border-brand/20 scale-[1.02]' : 'bg-white/5 border border-white/5' }}">
+                    <div class="flex items-center gap-4">
+                        <span class="w-6 text-center text-xs font-black {{ $index < 3 ? 'text-yellow-500' : 'text-gray-500' }}">#{{ $index + 1 }}</span>
+                        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black text-white">
+                            {{ substr($stat->user->name, 0, 1) }}
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-white">{{ $stat->user->name }}</p>
+                            <p class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Level {{ $stat->level }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-black text-brand">{{ number_format($stat->xp) }}</p>
+                        <p class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Total XP</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
 

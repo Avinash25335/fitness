@@ -169,15 +169,22 @@ class ProgressController extends Controller
             'total_workout_duration_this_week' => $sessionsThisWeek->sum('duration') / 60, // minutes
         ]);
 
-        // ── Old-style single insight (for backwards compat) ────────────────────
-        $insight = $aiInsights[0]['message'] ?? 'Keep logging to unlock insights.';
+        // ── Gamification System ──────────────────────────────────────────────
+        $gamification = new \App\Services\GamificationService();
+        $leaderboard  = $gamification->getLeaderboard();
+        $achievements = $user->achievements;
+        $allAchievements = \App\Models\Achievement::all();
+        
+        $nextLevelXp = pow(($user->stat->level ?? 1), 2) * 100;
+        $progressToNextLevel = (($user->stat->xp ?? 0) / max(1, $nextLevelXp)) * 100;
 
         return view('progress.index', compact(
             'user', 'profile', 'progressLogs', 'currentWeight', 'goalWeight', 'startingWeight',
             'totalLogs', 'totalChange', 'progressPercent', 'streak', 'insight',
             'workoutsThisWeek', 'workoutsThisMonth', 'totalCaloriesBurned',
             'weeklyWorkouts', 'weeklyCalories', 'weekLabels',
-            'prData', 'aiInsights'
+            'prData', 'aiInsights', 'leaderboard', 'achievements',
+            'allAchievements', 'progressToNextLevel'
         ));
     }
 
