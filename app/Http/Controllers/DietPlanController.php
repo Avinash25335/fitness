@@ -24,11 +24,12 @@ class DietPlanController extends Controller
             }
         }
 
+        $profile = Auth::user()->profile;
         $diets = DietPlan::all()->sortBy(function ($plan) use ($userGoal) {
             return $plan->goal === $userGoal ? 0 : 1;
         })->values();
 
-        return view('diets.index', compact('diets', 'userGoal', 'followingDietId', 'dietDay'));
+        return view('diets.index', compact('diets', 'userGoal', 'followingDietId', 'dietDay', 'profile'));
     }
 
     public function follow(DietPlan $diet)
@@ -96,5 +97,74 @@ class DietPlanController extends Controller
         return response($content)
             ->header('Content-Type', 'text/plain')
             ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    /**
+     * Get dynamic user-specific diet data (API)
+     */
+    public function getDiet()
+    {
+        $user = Auth::user();
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+        $service = new \App\Services\DietService();
+        $calories = $service->calculateCalories($user);
+        $macros = $service->calculateMacros($user, $calories);
+
+        // Find a plan matching the user's goal
+        $plan = DietPlan::where('goal', $user->profile?->goal)->first() ?? DietPlan::first();
+
+        return response()->json([
+            'calories' => round($calories),
+            'macros' => $macros,
+            'meals' => $plan ? $plan->meals_json : []
+        ]);
+    }
+
+    /**
+     * Generate an autonomous, personalized diet plan (API)
+     * Now accepts optional inputs to update profile in real-time
+     */
+    public function generateDiet(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+        // Extract metrics from request OR fallback to profile
+        $weight = $request->input('weight', $user->profile?->weight ?? 70);
+        $height = $request->input('height', $user->profile?->height ?? 175);
+        $age    = $request->input('age', $user->profile?->age ?? 25);
+        $gender = $request->input('gender', $user->profile?->gender ?? 'male');
+        $goal   = $request->input('goal', $user->profile?->goal ?? 'maintenance');
+        $activityLevel = $request->input('activity_level', $user->profile?->activity_level ?? 'moderate');
+
+        // Optional: Save to profile if we want persistence
+        if ($request->has('weight')) {
+            $user->profile()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'weight' => $weight, 
+                    'height' => $height, 
+                    'age' => $age,
+                    'gender' => $gender,
+                    'goal' => $goal,
+                    'activity_level' => $activityLevel
+                ]
+            );
+        }
+
+        // Pass explicit data to service instead of relying on $user->profile
+        $service = new \App\Services\DietService();
+        
+        $plan = $service->generatePlan($user, [
+            'weight' => $weight,
+            'height' => $height,
+            'age' => $age,
+            'gender' => $gender,
+            'goal' => $goal,
+            'activity_level' => $activityLevel
+        ]);
+
+        return response()->json($plan);
     }
 }

@@ -1,217 +1,327 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Expert Trainers')
-@section('page-subtitle', 'Book a 1-on-1 session with a certified professional')
+@section('page-title', 'Elite Marketplace')
+@section('page-subtitle', 'Schedule private sessions with top experts')
 
 @section('content')
-<div class="space-y-8 fade-up" x-data="{ 
-    showModal: false, 
-    selectedTrainer: null,
-    trainers: [],
-    filter: 'all'
-}">
-
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-extrabold text-white">Our Trainers</h2>
-            <p class="text-sm text-gray-400 mt-1">World-class certified fitness professionals ready to coach you</p>
+<div class="space-y-12 fade-up">
+    
+    <!-- My Bookings Dynamic Section -->
+    <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10 relative overflow-hidden group">
+        <div class="absolute right-0 top-0 p-12 opacity-5 group-hover:opacity-10 transition-opacity">
+            <svg class="w-48 h-48 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         </div>
-        <!-- Specialization filter pills -->
-        <div class="flex flex-wrap gap-2">
-            <button @click="filter = 'all'" :class="filter === 'all' ? 'bg-brand text-white shadow-lg' : 'bg-surface-2 text-gray-400 hover:text-white'"
-                class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 border border-border-col">
-                All
-            </button>
-            <button @click="filter = 'strength'" :class="filter === 'strength' ? 'bg-brand text-white shadow-lg' : 'bg-surface-2 text-gray-400 hover:text-white'"
-                class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 border border-border-col">
-                💪 Strength
-            </button>
-            <button @click="filter = 'cardio'" :class="filter === 'cardio' ? 'bg-brand text-white shadow-lg' : 'bg-surface-2 text-gray-400 hover:text-white'"
-                class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 border border-border-col">
-                🏃 Cardio
-            </button>
-            <button @click="filter = 'yoga'" :class="filter === 'yoga' ? 'bg-brand text-white shadow-lg' : 'bg-surface-2 text-gray-400 hover:text-white'"
-                class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 border border-border-col">
-                🧘 Yoga
-            </button>
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 mb-10">
+            <div>
+                <h2 class="text-3xl font-black text-white tracking-tighter">My Scheduled Sessions</h2>
+                <div class="flex gap-4 mt-3">
+                    <button onclick="switchBookingTab('upcoming')" id="tab_upcoming" class="text-[10px] font-black uppercase tracking-widest text-brand border-b-2 border-brand pb-1 transition-all">Upcoming</button>
+                    <button onclick="switchBookingTab('history')" id="tab_history" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all">History</button>
+                </div>
+            </div>
+            <div id="bookingStats" class="flex items-center gap-4">
+                 <!-- Stats injected via JS -->
+            </div>
+        </div>
+
+        <!-- Bookings List Container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="bookingList">
+            <!-- Bookings injected via JS -->
         </div>
     </div>
 
-    <!-- Trainer Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        @forelse($trainers as $trainer)
-        @php
-            $spec = strtolower($trainer->specialization ?? 'general');
-            $filterKey = str_contains($spec, 'strength') ? 'strength' : (str_contains($spec, 'cardio') ? 'cardio' : (str_contains($spec, 'yoga') ? 'yoga' : 'general'));
-            
-            // Random-ish ratings for realism
-            $rating = number_format(4.5 + (rand(0, 5) / 10), 1);
-            $reviews = rand(40, 150);
-            $isAvailable = rand(0, 1);
-        @endphp
-        <div class="flex flex-col h-full bg-gray-800 border border-gray-700 rounded-2xl shadow-xl hover:shadow-brand/10 hover:scale-[1.02] transition-all duration-500 overflow-hidden group"
-             x-show="filter === 'all' || filter === '{{ $filterKey }}'"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100">
+    <!-- Trainers Grid -->
+    <div class="space-y-8">
+        <div class="flex items-center justify-between">
+            <h3 class="text-2xl font-black text-white tracking-tight">Available Trainers</h3>
+        </div>
 
-            <!-- Trainer Image -->
-            <div class="relative h-64 overflow-hidden bg-gray-900 shrink-0">
-                <img src="{{ $trainer->image ?? 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=600&auto=format&fit=crop' }}"
-                     alt="{{ $trainer->user->name ?? 'Trainer' }}"
-                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                
-                <!-- Availability Badge -->
-                @if($isAvailable)
-                <div class="absolute top-4 left-4">
-                    <span class="flex items-center gap-1.5 bg-green-500 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">
-                        <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                        Available Today
-                    </span>
-                </div>
-                @endif
-
-                <!-- Rating Overlay -->
-                <div class="absolute bottom-4 left-4 bg-gray-900/60 backdrop-blur-md rounded-lg px-2.5 py-1.5 border border-white/10">
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-black text-white">{{ $rating }}</span>
-                        <div class="flex gap-0.5">
-                            @for($i=0; $i<5; $i++)
-                            <svg class="w-2.5 h-2.5 {{ $i < floor($rating) ? 'text-yellow-400' : 'text-gray-600' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            @endfor
-                        </div>
-                        <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">({{ $reviews }})</span>
-                    </div>
-                </div>
-
-                <!-- Price overlay -->
-                <div class="absolute top-4 right-4 bg-brand rounded-xl px-3 py-1 shadow-lg border border-brand-dark/20">
-                    <p class="text-lg font-black text-white tracking-tighter">${{ $trainer->hourly_rate ?? '50' }}</p>
-                    <p class="text-[9px] text-white/80 font-black uppercase tracking-widest text-center -mt-1">Session</p>
-                </div>
-            </div>
-
-            <div class="p-6 flex flex-col flex-1">
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-black text-white text-xl tracking-tight group-hover:text-brand transition-colors">{{ $trainer->user->name ?? 'Trainer' }}</h3>
-                        <span class="text-[10px] font-black text-gray-400 border border-gray-700 px-2 py-0.5 rounded-md uppercase tracking-widest">
-                            {{ $trainer->experience ?? '5' }}+ YRS
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            @foreach($trainers as $trainer)
+            <div class="flex flex-col bg-gray-800 border border-gray-700 rounded-[2.5rem] overflow-hidden group hover:border-brand/40 transition-all duration-500 relative hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(34,197,94,0.1)]">
+                @if(($trainer->rating ?? 4.8) >= 4.8)
+                    <div class="absolute top-6 right-6 z-20">
+                        <span class="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
+                            ⭐ Top Rated
                         </span>
                     </div>
-                    
-                    <p class="text-[10px] font-bold text-brand uppercase tracking-widest mb-3">{{ $trainer->specialization ?? 'General Fitness' }}</p>
+                @endif
 
-                    <p class="text-sm text-gray-400 leading-relaxed line-clamp-2 mb-6">
-                        {{ $trainer->bio ?? 'Passionate about helping you achieve your fitness goals with personalized coaching.' }}
+                <div class="h-32 bg-gradient-to-br from-brand to-brand-dark opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                
+                <div class="px-8 pb-8 -mt-16 flex flex-col h-full relative z-10">
+                    <div class="flex items-end justify-between mb-6">
+                        <div class="w-24 h-24 rounded-[2rem] border-4 border-gray-800 bg-gray-700 overflow-hidden shadow-2xl group-hover:scale-105 transition-transform duration-500">
+                            @if($trainer->image)
+                                <img src="{{ Str::startsWith($trainer->image, ['http://', 'https://']) ? $trainer->image : asset('storage/' . $trainer->image) }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-white font-black text-3xl bg-brand/20">
+                                    {{ substr($trainer->user->name, 0, 1) }}
+                                </div>
+                            @endif
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center gap-1.5 text-orange-400 mb-1">
+                                <span class="text-xs font-black">{{ $trainer->rating ?? 4.8 }}</span>
+                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            </div>
+                            <p class="text-xs font-black text-white">${{ number_format($trainer->hourly_rate, 0) }}<span class="text-[9px] text-gray-500 uppercase tracking-tighter">/Session</span></p>
+                        </div>
+                    </div>
+
+                    <h4 class="text-2xl font-black text-white tracking-tight group-hover:text-brand transition-colors">{{ $trainer->user->name }}</h4>
+                    <p class="text-[10px] font-black text-brand uppercase tracking-widest mt-1">{{ $trainer->specialization ?? 'Elite Coach' }}</p>
+                    
+                    <p class="text-sm text-gray-400 mt-4 line-clamp-2 leading-relaxed">
+                        {{ $trainer->bio ?? 'Passionate about helping you reach your peak performance through science-backed training.' }}
                     </p>
 
-                    <!-- Trust Tags -->
-                    <div class="flex flex-wrap gap-2 mb-6">
-                        <span class="text-[9px] font-bold text-gray-500 bg-white/5 border border-white/5 px-2 py-1 rounded">✓ NSCA Certified</span>
-                        <span class="text-[9px] font-bold text-gray-500 bg-white/5 border border-white/5 px-2 py-1 rounded">✓ CPR/AED</span>
+                    <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/5">
+                        <div>
+                            <p class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Experience</p>
+                            <p class="text-xs font-black text-white">{{ $trainer->experience ?? 5 }}+ Years</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Students</p>
+                            <p class="text-xs font-black text-white">250+ Active</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Button -->
-                @auth
-                <button @click="selectedTrainer = { id: {{ $trainer->id }}, name: '{{ $trainer->user->name }}', price: '{{ $trainer->hourly_rate }}' }; showModal = true"
-                   class="w-full bg-brand text-white font-black py-3.5 rounded-xl hover:bg-brand-dark shadow-lg shadow-brand/20 transition-all duration-300 text-sm tracking-wide uppercase">
-                    Book Session
-                </button>
-                @else
-                <a href="{{ route('login') }}"
-                   class="w-full bg-surface-2 border border-border-col text-gray-400 hover:text-white hover:border-gray-500 py-3.5 rounded-xl font-black text-sm tracking-wide uppercase text-center transition-all">
-                    Login to Book
-                </a>
-                @endauth
-            </div>
-        </div>
-        @empty
-        <div class="col-span-3 card py-20 text-center">
-            <p class="text-gray-500 font-black uppercase tracking-widest">No trainers available right now.</p>
-        </div>
-        @endforelse
-    </div>
-
-    <!-- BOOKING MODAL -->
-    <div x-show="showModal" 
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         style="display: none;">
-        
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl shadow-brand/10"
-             @click.away="showModal = false"
-             x-transition:enter="transition ease-out duration-300 translate-y-4"
-             x-transition:enter-start="opacity-0 translate-y-8"
-             x-transition:enter-end="opacity-100 translate-y-0">
-            
-            <!-- Modal Header -->
-            <div class="relative bg-gradient-to-r from-gray-800 to-gray-900 p-8 border-b border-gray-700">
-                <button @click="showModal = false" class="absolute top-4 right-4 text-gray-500 hover:text-white transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center">
-                        <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-black text-white tracking-tight">Book a Session</h3>
-                        <p class="text-sm text-gray-400">with <span class="text-brand font-bold" x-text="selectedTrainer?.name"></span></p>
+                    <div class="mt-8 space-y-4">
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Pick Date</label>
+                                <input type="date" id="date_{{ $trainer->id }}" value="{{ date('Y-m-d') }}"
+                                       onchange="loadSlots({{ $trainer->id }})"
+                                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[10px] font-black text-white focus:border-brand outline-none transition-all">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Select Slot</label>
+                                <div class="relative">
+                                    <select id="slot_{{ $trainer->id }}" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-black text-white focus:border-brand outline-none transition-all appearance-none cursor-pointer">
+                                        <option value="" disabled selected class="bg-gray-800 text-white">Pick Slot</option>
+                                    </select>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="bookTrainer({{ $trainer->id }})" id="btn_{{ $trainer->id }}"
+                                class="w-full bg-brand text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-green-600 shadow-lg shadow-brand/20 transition-all active:scale-95">
+                            Book Session →
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <!-- Modal Body -->
-            <form action="{{ route('trainers.book') }}" method="POST" class="p-8 space-y-6">
-                @csrf
-                <input type="hidden" name="trainer_id" :value="selectedTrainer?.id">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="block text-xs font-black text-gray-500 uppercase tracking-widest">Select Date</label>
-                        <input type="date" name="date" min="{{ date('Y-m-d') }}" required
-                               class="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-brand transition-all text-sm">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-xs font-black text-gray-500 uppercase tracking-widest">Time Slot</label>
-                        <select name="time_slot" required
-                                class="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-brand transition-all text-sm appearance-none">
-                            <option value="">Select Time</option>
-                            <option>06:00 AM</option><option>07:00 AM</option><option>08:00 AM</option>
-                            <option>09:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
-                            <option>05:00 PM</option><option>06:00 PM</option><option>07:00 PM</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Price</p>
-                        <p class="text-2xl font-black text-white tracking-tighter" x-text="'$' + selectedTrainer?.price"></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Duration</p>
-                        <p class="text-sm font-bold text-gray-300">60 Minutes</p>
-                    </div>
-                </div>
-
-                <button type="submit" 
-                        class="w-full bg-brand text-white font-black py-4 rounded-2xl hover:bg-brand-dark shadow-xl shadow-brand/20 transition-all duration-300 text-sm uppercase tracking-widest">
-                    Confirm Booking
-                </button>
-
-                <p class="text-[10px] text-center text-gray-500 leading-relaxed px-4">
-                    By confirming, you agree to our 24-hour cancellation policy. A confirmation email will be sent to your inbox.
-                </p>
-            </form>
+            @endforeach
         </div>
     </div>
 </div>
+
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="fixed inset-0 z-[600] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-brand/20 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl animate-fade-in">
+        <h3 class="text-2xl font-black text-white tracking-tighter mb-6">Reschedule Session</h3>
+        <div class="space-y-6">
+            <div class="space-y-2">
+                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">New Date</label>
+                <input type="date" id="reschedule_date" onchange="loadRescheduleSlots()" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-brand outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">New Time Slot</label>
+                <select id="reschedule_slot" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-brand outline-none transition-all appearance-none cursor-pointer">
+                    <option value="" disabled selected>Pick Slot</option>
+                </select>
+            </div>
+            <div class="flex gap-4 pt-4">
+                <button onclick="closeRescheduleModal()" class="flex-1 bg-white/5 text-gray-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all">Cancel</button>
+                <button onclick="submitReschedule()" id="rescheduleSubmitBtn" class="flex-1 bg-brand text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-green-600 shadow-lg shadow-brand/20 transition-all">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+let currentBookings = [];
+let activeTab = 'upcoming';
+let reschedulingId = null;
+let reschedulingTrainerId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadBookings();
+    @foreach($trainers as $trainer)
+        loadSlots({{ $trainer->id }});
+    @endforeach
+});
+
+function switchBookingTab(tab) {
+    activeTab = tab;
+    document.getElementById('tab_upcoming').className = tab === 'upcoming' ? 'text-[10px] font-black uppercase tracking-widest text-brand border-b-2 border-brand pb-1 transition-all' : 'text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all';
+    document.getElementById('tab_history').className = tab === 'history' ? 'text-[10px] font-black uppercase tracking-widest text-brand border-b-2 border-brand pb-1 transition-all' : 'text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all';
+    renderBookings();
+}
+
+async function loadSlots(trainerId) {
+    const date = document.getElementById(`date_${trainerId}`).value;
+    const select = document.getElementById(`slot_${trainerId}`);
+    if (!date) return;
+    try {
+        const standardSlots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"];
+        const res = await fetch(`/booked-slots/${trainerId}/${date}`);
+        const bookedSlots = await res.json();
+        select.innerHTML = `<option value="" disabled selected class="bg-gray-800 text-white">Pick Slot</option>`;
+        standardSlots.forEach(slot => {
+            const isBooked = bookedSlots.includes(slot);
+            select.innerHTML += `<option value="${slot}" ${isBooked ? 'disabled' : ''} class="bg-gray-800 ${isBooked ? 'text-gray-500' : 'text-white'}">${slot}${isBooked ? ' (Full ❌)' : ''}</option>`;
+        });
+    } catch (e) { console.error("Error loading slots", e); }
+}
+
+async function bookTrainer(trainerId) {
+    const date = document.getElementById(`date_${trainerId}`).value;
+    const time = document.getElementById(`slot_${trainerId}`).value;
+    const btn = document.getElementById(`btn_${trainerId}`);
+    if (!date || !time) { showToast("Pick date & time ❌"); return; }
+    btn.innerText = "Booking..."; btn.disabled = true;
+    try {
+        const res = await fetch("/book-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({ trainer_id: trainerId, date: date, time: time })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast("Booked! ✅"); loadBookings(); loadSlots(trainerId);
+        } else { showToast(data.message || "Error ❌"); }
+    } catch (e) { showToast("Failed ❌"); } finally { btn.innerText = "Book Session →"; btn.disabled = false; }
+}
+
+async function loadBookings() {
+    const res = await fetch("/my-sessions");
+    currentBookings = await res.json();
+    renderBookings();
+    updateStats();
+}
+
+function updateStats() {
+    const stats = document.getElementById('bookingStats');
+    const upcoming = currentBookings.filter(b => b.status === 'booked' && new Date(b.session_date) >= new Date().setHours(0,0,0,0)).length;
+    stats.innerHTML = `
+        <div class="text-center px-6 border-r border-white/5"><p class="text-2xl font-black text-white">${upcoming}</p><p class="text-[9px] font-black text-gray-500 uppercase tracking-widest">Upcoming</p></div>
+        <div class="text-center px-6"><p class="text-2xl font-black text-brand">${currentBookings.length}</p><p class="text-[9px] font-black text-gray-500 uppercase tracking-widest">Total</p></div>
+    `;
+}
+
+function renderBookings() {
+    const list = document.getElementById("bookingList");
+    list.innerHTML = "";
+    const today = new Date().setHours(0,0,0,0);
+    const filtered = currentBookings.filter(b => {
+        const isUpcoming = b.status === 'booked' && new Date(b.session_date) >= today;
+        return activeTab === 'upcoming' ? isUpcoming : !isUpcoming;
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 font-black uppercase tracking-widest text-[10px]">No sessions found.</p>';
+        return;
+    }
+
+    filtered.forEach(b => {
+        const isCancelled = b.status === 'cancelled';
+        const sessionDate = new Date(b.session_date);
+        const isSoon = activeTab === 'upcoming' && (sessionDate - today) < (24 * 60 * 60 * 1000);
+        
+        list.innerHTML += `
+            <div class="flex flex-col p-6 rounded-3xl bg-white/5 border ${isSoon ? 'border-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : 'border-white/5'} hover:border-brand/30 transition-all group">
+                ${isSoon ? '<div class="text-[8px] font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span> Urgent: Starts Soon</div>' : ''}
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-black text-xs">
+                            ${b.trainer.user.name.charAt(0)}
+                        </div>
+                        <div>
+                            <p class="text-sm font-black text-white group-hover:text-brand transition-colors">${b.trainer.user.name}</p>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">${new Date(b.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} @ ${b.session_time}</p>
+                        </div>
+                    </div>
+                    <span class="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${b.status === 'booked' ? 'bg-brand/10 text-brand' : 'bg-red-500/10 text-red-500'}">
+                        ${b.status}
+                    </span>
+                </div>
+                ${activeTab === 'upcoming' && !isCancelled ? `
+                    <div class="flex gap-3 pt-4 border-t border-white/5">
+                        <button onclick="openRescheduleModal(${b.id}, ${b.trainer_id})" class="flex-1 text-[8px] font-black text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Reschedule</button>
+                        <button onclick="cancelBooking(${b.id})" class="flex-1 text-[8px] font-black text-red-500/70 hover:text-red-500 uppercase tracking-widest transition-colors text-right">Cancel</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+}
+
+function openRescheduleModal(id, trainerId) {
+    reschedulingId = id;
+    reschedulingTrainerId = trainerId;
+    document.getElementById('rescheduleModal').classList.remove('hidden');
+}
+
+function closeRescheduleModal() {
+    document.getElementById('rescheduleModal').classList.add('hidden');
+}
+
+async function loadRescheduleSlots() {
+    const date = document.getElementById('reschedule_date').value;
+    const select = document.getElementById('reschedule_slot');
+    if (!date) return;
+    const standardSlots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"];
+    const res = await fetch(`/booked-slots/${reschedulingTrainerId}/${date}`);
+    const booked = await res.json();
+    select.innerHTML = '<option value="" disabled selected>Pick Slot</option>';
+    standardSlots.forEach(s => {
+        const isBooked = booked.includes(s);
+        select.innerHTML += `<option value="${s}" ${isBooked ? 'disabled' : ''} class="bg-gray-800">${s}${isBooked ? ' (Full)' : ''}</option>`;
+    });
+}
+
+async function submitReschedule() {
+    const date = document.getElementById('reschedule_date').value;
+    const time = document.getElementById('reschedule_slot').value;
+    if (!date || !time) { showToast("Pick date & time ❌"); return; }
+    const btn = document.getElementById('rescheduleSubmitBtn');
+    btn.innerText = "Updating..."; btn.disabled = true;
+    try {
+        const res = await fetch(`/reschedule-session/${reschedulingId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({ date: date, time: time })
+        });
+        if (res.ok) {
+            showToast("Rescheduled! ✅"); closeRescheduleModal(); loadBookings();
+        } else { showToast("Failed ❌"); }
+    } catch (e) { showToast("Error ❌"); } finally { btn.innerText = "Confirm"; btn.disabled = false; }
+}
+
+async function cancelBooking(id) {
+    if (!confirm("Cancel this session?")) return;
+    try {
+        const res = await fetch(`/cancel-session/${id}`, {
+            method: "POST",
+            headers: { "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content }
+        });
+        if (res.ok) { showToast("Cancelled ❌"); loadBookings(); }
+    } catch (e) { showToast("Error ❌"); }
+}
+
+function showToast(msg) {
+    const toast = document.createElement("div");
+    toast.innerText = msg;
+    toast.className = "fixed top-5 right-5 z-[700] bg-gray-900 border border-brand/30 text-white px-6 py-3 rounded-2xl shadow-2xl font-black uppercase text-[10px] tracking-widest animate-bounce";
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 2000);
+}
+</script>
 @endsection
