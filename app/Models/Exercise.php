@@ -8,6 +8,10 @@ class Exercise extends Model
 {
     protected $fillable = [
         'name',
+        'instructions',
+        'target_muscles',
+        'form_cues',
+        'mistakes',
         'muscle_group',
         'body_part',
         'sets',

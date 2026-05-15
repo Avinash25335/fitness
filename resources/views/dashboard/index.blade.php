@@ -6,13 +6,13 @@
 @section('content')
 <!-- Achievement Popup Overlay -->
 <div id="achievementPopup" class="hidden fixed inset-0 z-[300] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
-    <div class="bg-gray-800 border-2 border-brand/50 rounded-[3rem] p-12 max-w-sm w-full text-center space-y-6 shadow-[0_0_80px_rgba(34,197,94,0.3)] scale-90 transition-all duration-500" id="achievementCard">
-        <div class="w-24 h-24 bg-brand/20 rounded-full flex items-center justify-center text-brand mx-auto shadow-[0_0_30px_rgba(34,197,94,0.3)] animate-bounce">
+    <div class="bg-surface-2 border-2 border-brand/50 rounded-[3rem] p-12 max-w-sm w-full text-center space-y-6 shadow-2xl scale-90 transition-all duration-500" id="achievementCard">
+        <div class="w-24 h-24 bg-brand/20 rounded-full flex items-center justify-center text-brand mx-auto shadow-lg animate-bounce">
             <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"/></svg>
         </div>
         <div class="space-y-2">
             <h3 class="text-[10px] font-black text-brand uppercase tracking-[0.3em]">Achievement Unlocked</h3>
-            <h2 id="achievementTitle" class="text-3xl font-black text-white tracking-tighter">Legendary Session</h2>
+            <h2 id="achievementTitle" class="text-3xl font-black text-text-main tracking-tighter">Legendary Session</h2>
         </div>
         <button onclick="closeAchievement()" class="w-full bg-brand text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-600 transition-all">Claim Rewards</button>
     </div>
@@ -31,36 +31,35 @@
         };
     @endphp
     @if($activeUserPlan && isset($activeUserPlan->workout_plan_id))
-    <div class="bg-gradient-to-r from-brand to-brand-dark rounded-[2.5rem] p-8 shadow-[0_20px_40px_rgba(34,197,94,0.2)] flex flex-col md:flex-row items-center justify-between gap-6 group">
+    <div class="bg-gradient-to-r from-brand to-brand-dark rounded-[2.5rem] p-8 shadow-xl shadow-brand/20 flex flex-col md:flex-row items-center justify-between gap-6 group">
         <div class="flex items-center gap-6">
             <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white">
                 <svg class="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
             </div>
             <div>
                 <h3 class="text-2xl font-black text-white tracking-tight">Active Training Session</h3>
-                <p class="text-white/70 text-xs font-bold uppercase tracking-widest mt-1">{{ $goalMsg }}</p>
+                <p class="text-white/80 text-xs font-bold uppercase tracking-widest mt-1">{{ $goalMsg }}</p>
             </div>
         </div>
         <a href="{{ route('workouts.show', $activeUserPlan->workout_plan_id) }}" onclick="this.innerText='Loading...'" class="bg-white text-brand px-10 py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl active:scale-95 flex items-center gap-3">
             ▶ Resume Workout
-        </a>
     </div>
     @endif
 
     <!-- Profile Overview Card -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div class="xl:col-span-2 card p-10 relative overflow-hidden group">
+        <div class="xl:col-span-2 card p-10 relative overflow-hidden group bg-adaptive border-adaptive shadow-xl">
             <div class="absolute right-0 top-0 p-12 opacity-5 group-hover:opacity-10 transition-opacity">
-                <svg class="w-48 h-48 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <svg class="w-48 h-48 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             </div>
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div class="space-y-6">
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-inner">
+                        <div class="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-inner bg-adaptive">
                             <span class="text-3xl font-black" id="levelDisplay">{{ $user->stat?->level ?? 1 }}</span>
                         </div>
                         <div>
-                            <h2 class="text-3xl font-black text-white tracking-tighter">Welcome, {{ $user->name }}</h2>
+                            <h2 class="text-3xl font-black text-main-area tracking-tighter">Welcome, {{ $user->name }}</h2>
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1" id="aiMessage">SMART GOAL: {{ strtoupper(str_replace('_', ' ', $profile?->goal ?? 'FITNESS')) }}</p>
                         </div>
                     </div>
@@ -69,71 +68,62 @@
                     <div class="w-full max-w-sm space-y-3">
                         <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                             <span>Experience Points</span>
-                            <span id="xpText">{{ $user->stat?->xp ?? 0 }} / {{ ($user->stat?->level ?? 1) * 100 }} XP</span>
+                            <span id="xpText" class="text-main-area">{{ $user->stat?->xp ?? 0 }} / {{ ($user->stat?->level ?? 1) * 100 }} XP</span>
                         </div>
-                        <div class="h-3 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5 bg-adaptive border-adaptive">
                             <div id="xpBar" class="h-full bg-brand shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all duration-1000 rounded-full" style="width: {{ (($user->stat?->xp ?? 0) / (($user->stat?->level ?? 1) * 100)) * 100 }}%"></div>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap gap-3 pt-2">
                         @if($profile?->goal)
-                            <span class="text-[10px] font-black text-brand uppercase tracking-widest px-4 py-2 rounded-full bg-brand/5 border border-brand/20">
+                            <span class="text-[10px] font-black text-brand uppercase tracking-widest px-4 py-2 rounded-full bg-brand/5 border border-brand/20 bg-adaptive">
                                 🎯 {{ str_replace('_', ' ', $profile->goal) }}
                             </span>
                         @endif
-                        <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest px-4 py-2 rounded-full bg-orange-500/5 border border-orange-500/20 flex items-center gap-2">
+                        <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest px-4 py-2 rounded-full bg-orange-500/5 border border-orange-500/20 flex items-center gap-2 bg-adaptive">
                             <span class="animate-pulse">🔥</span> {{ $user->stat?->streak ?? 0 }} Day Streak
                         </span>
                     </div>
                 </div>
                 <div class="text-right space-y-2">
-                    <p class="text-5xl font-black text-white tracking-tighter">{{ $user->stat?->total_workouts ?? 0 }}</p>
+                    <p class="text-5xl font-black text-main-area tracking-tighter">{{ $user->stat?->total_workouts ?? 0 }}</p>
                     <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Workouts</p>
                     @if(!$activeUserPlan)
-                        <a href="{{ route('workouts.index') }}" class="inline-block mt-4 bg-green-500 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-600 transition-all shadow-lg active:scale-95">Explore Plans</a>
+                        <a href="{{ route('workouts.index') }}" class="inline-block mt-4 bg-brand text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-dark transition-all shadow-lg active:scale-95">Explore Plans</a>
                     @endif
                 </div>
             </div>
         </div>
 
         <!-- Weekly Activity & Smart Reminders -->
-        <div class="card p-8 flex flex-col space-y-8">
-            {{-- Reminders Hub --}}
+        <div class="card p-8 bg-adaptive border-adaptive shadow-xl">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest">Smart Reminders</h3>
+                <div class="w-2 h-2 rounded-full bg-brand animate-pulse"></div>
+            </div>
             <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-[10px] font-black text-white uppercase tracking-[0.2em]">Smart Reminders</h3>
-                    <span class="w-2 h-2 bg-brand rounded-full animate-pulse"></span>
-                </div>
-                
-                @if($mealReminder)
-                    <div class="bg-brand/5 border border-brand/20 p-4 rounded-2xl flex items-center gap-3">
-                        <span class="text-xl">🥗</span>
-                        <p class="text-[10px] font-black text-brand uppercase tracking-widest leading-relaxed">{{ $mealReminder }}</p>
-                    </div>
-                @endif
-
                 @forelse($upcomingSessions as $session)
-                    <div class="bg-blue-500/5 border border-blue-500/20 p-4 rounded-2xl flex items-center justify-between">
+                    <div class="bg-blue-500/5 border border-blue-500/20 p-4 rounded-2xl flex items-center justify-between bg-adaptive">
                         <div class="flex items-center gap-3">
                             <span class="text-xl">📅</span>
                             <div>
-                                <p class="text-[10px] font-black text-white uppercase tracking-widest">Session w/ {{ $session->trainer->name ?? 'Trainer' }}</p>
+                                <p class="text-[10px] font-black text-main-area uppercase tracking-widest">Session w/ {{ $session->trainer->name ?? 'Trainer' }}</p>
                                 <p class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{{ \Carbon\Carbon::parse($session->session_date)->format('M d') }} @ {{ $session->time_slot }}</p>
                             </div>
                         </div>
-                        <a href="{{ route('trainers.index') }}" class="text-[8px] font-black text-blue-400 border border-blue-400/30 px-2 py-1 rounded-lg uppercase">View</a>
+                        <a href="{{ route('trainers.index') }}" class="text-[8px] font-black text-brand border border-brand/30 px-2 py-1 rounded-lg uppercase">View</a>
                     </div>
                 @empty
                     @if(!$mealReminder)
-                        <p class="text-[9px] text-gray-600 font-black uppercase tracking-widest text-center py-4">No urgent alerts 🛡️</p>
+                        <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest text-center py-4">No urgent alerts 🛡️</p>
                     @endif
                 @endforelse
             </div>
 
-            <div class="pt-8 border-t border-white/5">
+            <div class="pt-8 border-t border-adaptive">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-[10px] font-black text-white uppercase tracking-widest">Growth Curve</h3>
+                    <h3 class="text-[10px] font-black text-main-area uppercase tracking-widest">Growth Curve</h3>
                 </div>
                 <div class="flex-1 min-h-[160px] relative">
                     <canvas id="weeklyChart"></canvas>
@@ -144,34 +134,34 @@
 
     <!-- Analytics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="card p-8 group">
+        <div class="card p-8 group bg-adaptive border-adaptive shadow-xl">
             <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">Total Time</p>
-            <p class="text-3xl font-black text-white group-hover:text-brand transition-colors" id="statTime">0 <span class="text-xs">MINS</span></p>
+            <p class="text-3xl font-black text-main-area group-hover:text-brand transition-colors" id="statTime">0 <span class="text-xs">MINS</span></p>
         </div>
-        <div class="card p-8 group">
+        <div class="card p-8 group bg-adaptive border-adaptive shadow-xl">
             <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">Weekly Load</p>
-            <p class="text-3xl font-black text-white group-hover:text-brand transition-colors" id="statAvg">0.0 <span class="text-xs">/ WEEK</span></p>
+            <p class="text-3xl font-black text-main-area group-hover:text-brand transition-colors" id="statAvg">0.0 <span class="text-xs">/ WEEK</span></p>
         </div>
         <div class="card p-8 group border-brand/20 bg-brand/5 relative overflow-hidden">
             <div class="absolute right-[-10px] top-[-10px] opacity-10 rotate-12">
                 <svg class="w-16 h-16 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
             <p class="text-[9px] font-black text-brand uppercase tracking-widest mb-2">Nutrition Hub</p>
-            <a href="{{ route('diets.index') }}" class="text-xl font-black text-white hover:text-brand transition-all flex items-center gap-2">
+            <a href="{{ route('diets.index') }}" class="text-xl font-black text-main-area hover:text-brand transition-all flex items-center gap-2">
                 Generate Diet <span class="text-brand">→</span>
             </a>
         </div>
-        <div class="card p-8 group">
+        <div class="card p-8 group bg-adaptive border-adaptive shadow-xl">
             <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">Peak Streak</p>
             <p class="text-3xl font-black text-orange-400 group-hover:text-orange-500 transition-colors" id="statStreak">0 <span class="text-xs">DAYS</span></p>
         </div>
     </div>
 
     <!-- Achievements -->
-    <div class="card p-10">
+    <div class="card p-10 bg-adaptive border-adaptive shadow-xl">
         <div class="flex items-center justify-between mb-10">
             <div>
-                <h3 class="text-2xl font-black text-white tracking-tight">Unlocked Achievements</h3>
+                <h3 class="text-2xl font-black text-main-area tracking-tight">Unlocked Achievements</h3>
                 <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Consistency pays in trophies</p>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400">
@@ -246,6 +236,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = await res.json();
         const ctx = document.getElementById("weeklyChart").getContext("2d");
         
+        const isLight = document.documentElement.classList.contains('light-mode');
+        const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+        const textColor = isLight ? '#6b7280' : '#4b5563';
+
         // Gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, 160);
         gradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
@@ -268,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderWidth: 3,
                     pointRadius: 4,
                     pointBackgroundColor: '#22c55e',
-                    pointBorderColor: '#0a0f1a',
+                    pointBorderColor: isLight ? '#ffffff' : '#0a0f1a',
                     pointBorderWidth: 2
                 }]
             },
@@ -277,19 +271,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: { 
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#1f2937',
+                        backgroundColor: isLight ? '#ffffff' : '#1f2937',
+                        titleColor: isLight ? '#111827' : '#ffffff',
+                        bodyColor: isLight ? '#374151' : '#d1d5db',
                         titleFont: { size: 10, weight: 'black' },
                         bodyFont: { size: 12, weight: 'bold' },
                         displayColors: false,
                         padding: 12,
                         cornerRadius: 12,
                         borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.1)'
+                        borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'
                     }
                 },
                 scales: { 
                     y: { display: false, beginAtZero: true }, 
-                    x: { grid: { display: false }, ticks: { color: '#4b5563', font: { weight: 'black', size: 9 } } } 
+                    x: { grid: { display: false }, ticks: { color: textColor, font: { weight: 'black', size: 9 } } } 
                 }
             }
         });
@@ -305,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const date = new Date(); date.setDate(date.getDate() - i);
             const dateStr = date.toISOString().split('T')[0];
             const el = document.createElement('div');
-            el.className = `aspect-square rounded-xl border border-white/5 transition-all duration-700 ${completedDates.includes(dateStr) ? 'bg-brand shadow-[0_0_15px_rgba(34,197,94,0.4)] scale-110' : 'bg-white/5'}`;
+            el.className = `aspect-square rounded-xl border border-adaptive transition-all duration-700 ${completedDates.includes(dateStr) ? 'bg-brand shadow-[0_0_15px_rgba(34,197,94,0.4)] scale-110' : 'bg-adaptive'}`;
             grid.appendChild(el);
         }
     }
@@ -335,11 +331,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         data.forEach(a => {
             const badge = document.createElement('div');
-            badge.className = "flex-shrink-0 bg-[#151a24] border border-white/5 hover:border-orange-500/30 px-6 py-5 rounded-[2rem] flex items-center gap-4 group transition-all cursor-default shadow-xl";
+            badge.className = "flex-shrink-0 bg-adaptive border border-adaptive hover:border-orange-500/30 px-6 py-5 rounded-[2rem] flex items-center gap-4 group transition-all cursor-default shadow-xl";
             badge.innerHTML = `
                 <span class="text-2xl">${a.split(' ')[0]}</span>
                 <div>
-                    <p class="text-[10px] font-black text-white uppercase tracking-widest">${a.split(' ').slice(1).join(' ')}</p>
+                    <p class="text-[10px] font-black text-main-area uppercase tracking-widest">${a.split(' ').slice(1).join(' ')}</p>
                     <p class="text-[8px] font-black text-brand uppercase tracking-widest mt-0.5">UNLOCKED</p>
                 </div>
             `;

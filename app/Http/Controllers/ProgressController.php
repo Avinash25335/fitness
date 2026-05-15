@@ -80,7 +80,7 @@ class ProgressController extends Controller
         // ── Days Since Last Workout ────────────────────────────────────────────
         $lastSession = $allSessions->last();
         $daysSinceLastWorkout = $lastSession
-            ? Carbon::parse($lastSession->completed_at)->diffInDays(now())
+            ? (int)round(Carbon::parse($lastSession->completed_at)->diffInDays(now()))
             : 999;
 
         // ── Missed Muscle Groups (this week) ──────────────────────────────────
@@ -169,7 +169,10 @@ class ProgressController extends Controller
             'total_workout_duration_this_week' => $sessionsThisWeek->sum('duration') / 60, // minutes
         ]);
 
-        // ── Gamification System ──────────────────────────────────────────────
+        // ── DEFENSIVE DEFINITION ──
+        $insight = 'Keep logging to unlock insights.';
+
+        // ── Gamification System [REFRESH_FORCE_V3] ──────────────────────────
         $gamification = new \App\Services\GamificationService();
         $leaderboard  = $gamification->getLeaderboard();
         $achievements = $user->achievements;
@@ -178,14 +181,36 @@ class ProgressController extends Controller
         $nextLevelXp = pow(($user->stat->level ?? 1), 2) * 100;
         $progressToNextLevel = (($user->stat->xp ?? 0) / max(1, $nextLevelXp)) * 100;
 
-        return view('progress.index', compact(
-            'user', 'profile', 'progressLogs', 'currentWeight', 'goalWeight', 'startingWeight',
-            'totalLogs', 'totalChange', 'progressPercent', 'streak', 'insight',
-            'workoutsThisWeek', 'workoutsThisMonth', 'totalCaloriesBurned',
-            'weeklyWorkouts', 'weeklyCalories', 'weekLabels',
-            'prData', 'aiInsights', 'leaderboard', 'achievements',
-            'allAchievements', 'progressToNextLevel'
-        ));
+        // Update insight if AI data is available
+        if (isset($aiInsights[0]['message'])) {
+            $insight = $aiInsights[0]['message'];
+        }
+
+        return view('progress.index')
+            ->with('user', $user)
+            ->with('profile', $profile)
+            ->with('progressLogs', $progressLogs)
+            ->with('currentWeight', $currentWeight)
+            ->with('goalWeight', $goalWeight)
+            ->with('startingWeight', $startingWeight)
+            ->with('totalLogs', $totalLogs)
+            ->with('totalChange', $totalChange)
+            ->with('progressPercent', $progressPercent)
+            ->with('streak', $streak)
+            ->with('insight', $insight)
+            ->with('workoutsThisWeek', $workoutsThisWeek)
+            ->with('workoutsThisMonth', $workoutsThisMonth)
+            ->with('totalCaloriesBurned', $totalCaloriesBurned)
+            ->with('weeklyWorkouts', $weeklyWorkouts)
+            ->with('weeklyCalories', $weeklyCalories)
+            ->with('weekLabels', $weekLabels)
+            ->with('prData', $prData)
+            ->with('aiInsights', $aiInsights)
+            ->with('leaderboard', $leaderboard)
+            ->with('achievements', $achievements)
+            ->with('allAchievements', $allAchievements)
+            ->with('nextLevelXp', $nextLevelXp)
+            ->with('progressToNextLevel', $progressToNextLevel);
     }
 
     public function store(Request $request)

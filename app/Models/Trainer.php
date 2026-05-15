@@ -27,4 +27,9 @@ class Trainer extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function availability()
+    {
+        return $this->hasMany(TrainerAvailability::class);
+    }
 }

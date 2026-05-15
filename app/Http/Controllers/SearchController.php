@@ -30,9 +30,13 @@ class SearchController extends Controller
                   ->orWhere('content', 'like', "%{$query}%");
             })
             ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
             ->get();
 
-        return view('search.results', compact('query', 'workouts', 'diets', 'posts'));
+        $trainers = \App\Models\Trainer::where('name', 'like', "%{$query}%")
+            ->orWhere('bio', 'like', "%{$query}%")
+            ->orWhere('specialization', 'like', "%{$query}%")
+            ->get();
+
+        return view('search.results', compact('query', 'workouts', 'diets', 'posts', 'trainers'));
     }
 }

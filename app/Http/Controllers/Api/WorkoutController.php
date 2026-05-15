@@ -58,7 +58,8 @@ class WorkoutController extends Controller
             'exercise_id' => 'required|exists:exercises,id',
             'sets' => 'nullable|integer',
             'reps' => 'nullable|integer',
-            'weight' => 'nullable|numeric'
+            'weight' => 'nullable|numeric',
+            'rpe' => 'nullable|integer|min:1|max:10'
         ]);
 
         $log = ExerciseLog::updateOrCreate(
@@ -67,14 +68,32 @@ class WorkoutController extends Controller
                 'completed' => true, 
                 'sets_completed' => $req->sets ?? 0, 
                 'reps_completed' => $req->reps ?? 0, 
-                'weight' => $req->weight
+                'weight' => $req->weight,
+                'rpe' => $req->rpe ?? 7
             ]
         );
+
+        // 🧠 AI FATIGUE & INTELLIGENCE ENGINE
+        $exercise = Exercise::find($req->exercise_id);
+        $rpe = $req->rpe ?? 7;
+        $coachingTip = "Perfect intensity! Keep it up.";
+        
+        if ($rpe >= 9 && $req->reps < $exercise->reps) {
+            $coachingTip = "Fatigue detected. You are pushing your limits! Consider a 10% weight deload next time to ensure recovery. 🛡️";
+        } elseif ($req->reps > $exercise->reps && $rpe <= 7) {
+            $coachingTip = "Absolute beast mode! You conquered that set easily. Increase weight by 2.5kg-5kg next session. 📈";
+        } elseif ($rpe >= 10) {
+            $coachingTip = "Maximum exertion reached. Take an extra 30s rest before the next set. 💧";
+        }
 
         $gamification = new \App\Services\GamificationService();
         $gamification->awardXp(Auth::user(), 10, 'Exercise Completed');
 
-        return response()->json(['success' => true, 'log' => $log]);
+        return response()->json([
+            'success' => true, 
+            'log' => $log,
+            'coaching_tip' => $coachingTip
+        ]);
     }
 
     /**
@@ -121,7 +140,9 @@ class WorkoutController extends Controller
                 'message' => 'Session completed',
                 'duration' => $session->duration,
                 'calories' => $session->calories_burned,
+                'exercises_completed' => $session->exerciseLogs()->where('completed', true)->count(),
                 'xp_gained' => 50,
+                'streak' => $stats->streak,
                 'leveled_up' => $result['leveled_up'],
                 'new_level' => $result['new_level']
             ]);
@@ -242,6 +263,27 @@ class WorkoutController extends Controller
         $completed = WorkoutSession::where('user_plan_id', $userPlan->id)->where('completed', true)->count();
         $currentSession = WorkoutSession::where('user_plan_id', $userPlan->id)->where('day_number', $userPlan->current_day)->first();
         $stats = Auth::user()->stat;
+        // 📈 HISTORICAL PERFORMANCE (Progressive Overload)
+        $historicalStats = [];
+        $exercises = $userPlan->plan->exercises;
+        foreach ($exercises as $ex) {
+            $lastLog = ExerciseLog::where('exercise_id', $ex->id)
+                ->whereHas('session', function($q) use ($userPlan) {
+                    $q->where('user_plan_id', $userPlan->id)->where('completed', true);
+                })
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($lastLog) {
+                $historicalStats[$ex->id] = [
+                    'weight' => $lastLog->weight,
+                    'reps' => $lastLog->reps_completed,
+                    'sets' => $lastLog->sets_completed,
+                    'date' => $lastLog->created_at->format('M d')
+                ];
+            }
+        }
+
         return response()->json([
             'total' => $total, 
             'completed' => $completed, 
@@ -253,6 +295,7 @@ class WorkoutController extends Controller
             'paused_at' => $currentSession && $currentSession->paused_at ? $currentSession->paused_at->timestamp * 1000 : null,
             'total_paused' => $currentSession ? $currentSession->total_paused_seconds : 0,
             'completed_exercises' => $currentSession ? $currentSession->exerciseLogs()->pluck('exercise_id') : [],
+            'historical_stats' => $historicalStats,
             'streak' => $stats->streak ?? 0, 'xp' => $stats->xp ?? 0, 'level' => $stats->level ?? 1
         ]);
     }

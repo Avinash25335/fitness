@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WorkoutPlanController;
 use App\Http\Controllers\DietPlanController;
 use App\Http\Controllers\ProgressController;
@@ -36,10 +37,27 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name(
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
+// 🔐 Email Verification
+Route::get('/email/verify', [AuthController::class, 'showVerifyEmail'])->middleware('auth')->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware(['auth', 'signed'])->name('verification.verify');
+Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
 // 🔐 Authenticated Routes
+// --- 📤 Export System Routes ---
+Route::middleware(['auth'])->group(function () {
+    Route::get('/export/progress', [App\Http\Controllers\ExportController::class, 'progress'])->name('export.progress');
+    Route::get('/export/workouts', [App\Http\Controllers\ExportController::class, 'workouts'])->name('export.workouts');
+    Route::get('/export/diet', [App\Http\Controllers\ExportController::class, 'diet'])->name('export.diet');
+    Route::get('/export/invoice/{id}', [App\Http\Controllers\ExportController::class, 'invoice'])->name('export.invoice');
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
     // Workouts
     Route::get('/workouts', [WorkoutPlanController::class, 'index'])->name('workouts.index');
     Route::get('/workouts/{workout}', [WorkoutPlanController::class, 'show'])->name('workouts.show');

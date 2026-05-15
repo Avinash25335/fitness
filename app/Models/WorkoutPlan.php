@@ -25,4 +25,9 @@ class WorkoutPlan extends Model
     {
         return $this->belongsToMany(Exercise::class, 'workout_exercise')->withPivot('order')->withTimestamps();
     }
+
+    public function userWorkouts()
+    {
+        return $this->hasMany(UserWorkout::class);
+    }
 }

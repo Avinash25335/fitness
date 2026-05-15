@@ -19,18 +19,18 @@
         <!-- Workout Plans Results -->
         @if($workouts->isNotEmpty())
         <div>
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-green-500 rounded-full"></span>
+            <h3 class="text-lg font-bold text-main-area mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-brand rounded-full"></span>
                 Workout Plans ({{ $workouts->count() }})
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($workouts as $workout)
                 <a href="{{ route('workouts.show', $workout) }}" class="card p-5 group">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 uppercase tracking-widest">{{ $workout->level }}</span>
-                        <svg class="w-4 h-4 text-gray-600 group-hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand/10 text-brand border border-brand/20 uppercase tracking-widest">{{ $workout->level }}</span>
+                        <svg class="w-4 h-4 text-gray-600 group-hover:text-brand transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </div>
-                    <h4 class="font-bold text-white mb-1 group-hover:text-green-400 transition-colors">{{ $workout->title }}</h4>
+                    <h4 class="font-bold text-main-area mb-1 group-hover:text-brand transition-colors">{{ $workout->title }}</h4>
                     <p class="text-xs text-gray-500 line-clamp-2">{{ $workout->description }}</p>
                 </a>
                 @endforeach
@@ -76,6 +76,28 @@
                     </div>
                     <h4 class="font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{{ $post->title }}</h4>
                     <p class="text-xs text-gray-500 line-clamp-2">{{ Str::limit(strip_tags($post->content), 100) }}</p>
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- Trainer Results -->
+        @if($trainers->isNotEmpty())
+        <div>
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span>
+                Pro Trainers ({{ $trainers->count() }})
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($trainers as $trainer)
+                <a href="{{ route('trainers.index') }}" class="card p-5 group">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase tracking-widest">{{ $trainer->specialization }}</span>
+                        <svg class="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                    <h4 class="font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{{ $trainer->name }}</h4>
+                    <p class="text-xs text-gray-500 line-clamp-2">{{ $trainer->bio }}</p>
                 </a>
                 @endforeach
             </div>

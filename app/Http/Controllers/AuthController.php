@@ -143,6 +143,23 @@ class AuthController extends Controller
 
         DB::table('password_reset_tokens')->where(['email'=> $request->email])->delete();
 
-        return redirect('/login')->with('status', 'Your password has been changed!');
+    }
+
+    // 🔐 Email Verification Methods
+    public function showVerifyEmail()
+    {
+        return view('auth.verify-email');
+    }
+
+    public function verifyEmail(\Illuminate\Foundation\Auth\EmailVerificationRequest $request)
+    {
+        $request->fulfill();
+        return redirect('/dashboard')->with('success', 'Email verified successfully! 🎖️');
+    }
+
+    public function resendVerification(Request $request)
+    {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'Verification link sent!');
     }
 }

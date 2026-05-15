@@ -11,27 +11,32 @@ class WorkoutPlanController extends Controller
 {
     public function index()
     {
-        // Eager-load exercise count so the view can display it without N+1 queries
         $workouts = WorkoutPlan::withCount('exercises')
-            ->orderBy('level') // beginner → intermediate → advanced
+            ->orderBy('level')
             ->get();
 
-        // If the user is logged in, figure out which plans they have already logged
         $loggedPlanIds = collect();
         $planProgress = [];
         $activePlanId = null;
 
         if (Auth::check()) {
-            $logs = WorkoutLog::where('user_id', Auth::id())->get();
-            $loggedPlanIds = $logs->pluck('workout_plan_id')->unique();
+            $userPlans = \App\Models\UserPlan::where('user_id', Auth::id())
+                ->where('is_completed', false)
+                ->get();
+                
+            $loggedPlanIds = $userPlans->pluck('plan_id');
             
-            foreach ($loggedPlanIds as $id) {
-                $planProgress[$id] = $logs->where('workout_plan_id', $id)->count();
+            foreach ($userPlans as $up) {
+                // Progress is (completed_sessions / total_sessions) * 100
+                $total = $up->sessions()->count();
+                $completed = $up->sessions()->where('completed', true)->count();
+                $planProgress[$up->plan_id] = $total > 0 ? round(($completed / $total) * 100) : 0;
             }
 
-            $activePlanId = WorkoutLog::where('user_id', Auth::id())
+            $activePlanId = \App\Models\UserPlan::where('user_id', Auth::id())
+                ->where('is_completed', false)
                 ->latest()
-                ->value('workout_plan_id');
+                ->value('plan_id');
         }
 
         return view('workouts.index', compact('workouts', 'loggedPlanIds', 'activePlanId', 'planProgress'));
@@ -43,14 +48,27 @@ class WorkoutPlanController extends Controller
             $q->orderBy('workout_exercise.order');
         }]);
 
-        // Check if the current user has already logged this plan
-        $alreadyStarted = false;
+        $activeUserPlan = null;
+        $completedExerciseIds = collect();
+        
         if (Auth::check()) {
-            $alreadyStarted = WorkoutLog::where('user_id', Auth::id())
-                ->where('workout_plan_id', $workout->id)
-                ->exists();
+            $activeUserPlan = \App\Models\UserPlan::where('user_id', Auth::id())
+                ->where('plan_id', $workout->id)
+                ->where('is_completed', false)
+                ->first();
+            
+            if ($activeUserPlan) {
+                // Find the session for the current day of the plan
+                $currentSession = $activeUserPlan->sessions()
+                    ->where('day_number', $activeUserPlan->current_day)
+                    ->first();
+                
+                if ($currentSession) {
+                    $completedExerciseIds = $currentSession->exerciseLogs()->pluck('exercise_id');
+                }
+            }
         }
 
-        return view('workouts.show', compact('workout', 'alreadyStarted'));
+        return view('workouts.show', compact('workout', 'activeUserPlan', 'completedExerciseIds'));
     }
 }

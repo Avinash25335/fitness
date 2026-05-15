@@ -21,8 +21,8 @@ class AICoachService
         $avgCaloriesPerWeek  = $data['avg_calories_per_week'] ?? 0;
         $prsBroken           = $data['prs_broken_this_week'] ?? 0;
         $missedMuscleGroups  = $data['missed_muscle_groups'] ?? [];
-        $daysSinceLastWorkout = $data['days_since_last_workout'] ?? 0;
-        $totalWorkoutsThisWeek = $data['total_workout_duration_this_week'] ?? 0; // minutes
+        $daysSinceLastWorkout = (int)round($data['days_since_last_workout'] ?? 0);
+        $totalWorkoutsThisWeek = (int)round($data['total_workout_duration_this_week'] ?? 0); // minutes
 
         // ══════════════════════════════════════════════════════════════════════
         // SECTION A: WORKOUT COACHING

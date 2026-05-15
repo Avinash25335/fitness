@@ -12,6 +12,7 @@ class UserProfile extends Model
     protected $fillable = [
         'user_id',
         'weight',
+        'goal_weight',
         'height',
         'bmi',
         'goal',
