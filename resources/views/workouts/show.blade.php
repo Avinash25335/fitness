@@ -249,19 +249,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let exercises = Array.from(document.querySelectorAll('.exercise-item'));
     
     // ✅ PRO ENGINE STATE
-    let currentExerciseIndex = 0;
-    let currentSet = 1;
+    let currentExerciseIndex = localStorage.getItem(`curEx_${planId}`) ? parseInt(localStorage.getItem(`curEx_${planId}`)) : 0;
+    let currentSet = localStorage.getItem(`curSet_${planId}`) ? parseInt(localStorage.getItem(`curSet_${planId}`)) : 1;
     let isResting = false;
     let restInterval;
-    let restSeconds = 30; // Standard rest
+    let restSeconds = 30;
 
-    // ✅ PRO FEEDBACK (VOICE & HAPTIC)
+    // ✅ PRO FEEDBACK
     function speak(text) {
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Stop current speech
+            window.speechSynthesis.cancel(); 
             const msg = new SpeechSynthesisUtterance(text);
             msg.rate = 1.1;
-            msg.pitch = 1;
             window.speechSynthesis.speak(msg);
         }
     }
@@ -270,17 +269,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if ('vibrate' in navigator) navigator.vibrate(200);
     }
 
-    // ✅ LOCAL-FIRST TIMER STATE (The Source of Truth)
+    // ✅ LOCAL-FIRST TIMER STATE
     let startTime = localStorage.getItem(`startTime_${planId}`) ? parseInt(localStorage.getItem(`startTime_${planId}`)) : null;
     let pausedAt = localStorage.getItem(`pausedAt_${planId}`) ? parseInt(localStorage.getItem(`pausedAt_${planId}`)) : null;
     let totalPaused = parseInt(localStorage.getItem(`totalPaused_${planId}`)) || 0;
     let isPausedLocal = localStorage.getItem(`isPaused_${planId}`) === "true";
+    let lastSessionId = localStorage.getItem(`sessionId_${planId}`);
 
     // ✅ TIMER ENGINE
     function startTimer() {
         if (!startTime) return;
         clearInterval(timerInterval);
-        
         document.getElementById('pauseBtn').classList.remove('hidden');
 
         if (isPausedLocal) {
@@ -290,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePauseUI(false);
             runActiveInterval();
         }
-        
         if (endBtn) endBtn.classList.remove('hidden');
     }
 
@@ -311,51 +309,36 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePauseUI(paused) {
         const pIcon = document.getElementById('pauseIcon');
         const rIcon = document.getElementById('resumeIcon');
-        if (paused) {
-            pIcon.classList.add('hidden');
-            rIcon.classList.remove('hidden');
-        } else {
-            pIcon.classList.remove('hidden');
-            rIcon.classList.add('hidden');
-        }
+        if (paused) { pIcon.classList.add('hidden'); rIcon.classList.remove('hidden'); }
+        else { pIcon.classList.remove('hidden'); rIcon.classList.add('hidden'); }
     }
 
     async function togglePause() {
         if (!sessionId) return;
-
         if (!isPausedLocal) {
-            // ACTION: PAUSE
             clearInterval(timerInterval);
             pausedAt = Date.now();
             isPausedLocal = true;
-            
             localStorage.setItem(`pausedAt_${planId}`, pausedAt);
             localStorage.setItem(`isPaused_${planId}`, "true");
-            
             updateUIFrozen();
             updatePauseUI(true);
-            
             fetch(`/api/session/pause/${sessionId}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
             showToast("Paused ⏸️");
             speak("Session paused");
         } else {
-            // ACTION: RESUME
             const pauseDuration = Date.now() - (pausedAt || Date.now());
             totalPaused += pauseDuration;
-            
             isPausedLocal = false;
             pausedAt = null;
-            
             localStorage.setItem(`totalPaused_${planId}`, totalPaused);
             localStorage.setItem(`isPaused_${planId}`, "false");
             localStorage.removeItem(`pausedAt_${planId}`);
-            
             updatePauseUI(false);
             runActiveInterval();
-            
             fetch(`/api/session/resume/${sessionId}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
             showToast("Resumed ▶️");
-            speak("Resuming workout");
+            speak("Resuming");
         }
     }
 
@@ -368,29 +351,20 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sessionTimer').innerText = `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    // ✅ REST ENGINE (PRO UPGRADE)
     function startRestTimer() {
         if (isResting) return;
         isResting = true;
         let timeLeft = restSeconds;
-        
         restBox.classList.remove('hidden');
         updateRestRing(1);
         restTimerEl.innerText = timeLeft;
-        
-        speak("Nice set. Rest started.");
-
+        speak("Rest started");
         clearInterval(restInterval);
         restInterval = setInterval(() => {
             timeLeft--;
             restTimerEl.innerText = timeLeft;
             updateRestRing(timeLeft / restSeconds);
-            
-            // Pro Voice Countdown
-            if (timeLeft <= 3 && timeLeft > 0) {
-                speak(timeLeft.toString());
-            }
-
+            if (timeLeft <= 3 && timeLeft > 0) speak(timeLeft.toString());
             if (timeLeft <= 0) {
                 clearInterval(restInterval);
                 isResting = false;
@@ -403,15 +377,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateRestRing(percent) {
         const ring = document.getElementById('restRing');
-        if (!ring) return;
-        ring.style.strokeDashoffset = 276 - (percent * 276);
+        if (ring) ring.style.strokeDashoffset = 276 - (percent * 276);
     }
 
     skipRestBtn.addEventListener('click', () => {
         clearInterval(restInterval);
         isResting = false;
         restBox.classList.add('hidden');
-        speak("Ready? Go!");
+        speak("Go!");
         nextSetOrExercise();
     });
 
@@ -421,10 +394,13 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem(`pausedAt_${planId}`);
         localStorage.removeItem(`totalPaused_${planId}`);
         localStorage.removeItem(`isPaused_${planId}`);
+        localStorage.removeItem(`sessionId_${planId}`);
+        localStorage.removeItem(`curEx_${planId}`);
+        localStorage.removeItem(`curSet_${planId}`);
         document.getElementById('pauseBtn').classList.add('hidden');
     }
 
-    // ✅ WORKOUT LOGIC (PRO ENGINE)
+    // ✅ WORKOUT LOGIC
     async function startSession() {
         const res = await fetch(`/api/plan/start/${planId}`, {
             method: 'POST',
@@ -432,16 +408,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         const data = await res.json();
         
-        // Init Local State
+        // Reset Local State for New Session
         startTime = Date.now();
         totalPaused = 0;
         isPausedLocal = false;
+        currentExerciseIndex = 0;
+        currentSet = 1;
+
         localStorage.setItem(`startTime_${planId}`, startTime);
         localStorage.setItem(`totalPaused_${planId}`, 0);
         localStorage.setItem(`isPaused_${planId}`, "false");
+        localStorage.setItem(`curEx_${planId}`, 0);
+        localStorage.setItem(`curSet_${planId}`, 1);
 
         showToast('Session Started! 🏋️');
-        speak("Let's crush this workout. First exercise is " + exercises[0].dataset.name);
+        speak("Let's go. First exercise is " + exercises[0].dataset.name);
         loadProgress();
     }
 
@@ -451,11 +432,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await res.json();
             sessionId = data.session_id;
 
-            if (sessionId && !startTime && data.started_at) {
+            // 🔑 SESSION VALIDATION: If server session ID changed, wipe local stale data
+            if (sessionId && lastSessionId != sessionId) {
+                console.log("New Session Detected. Syncing state...");
+                stopTimer(); // Clear old plan state
                 startTime = data.started_at;
                 totalPaused = (data.total_paused || 0) * 1000;
                 isPausedLocal = data.is_paused;
                 pausedAt = data.paused_at;
+                
+                localStorage.setItem(`sessionId_${planId}`, sessionId);
                 localStorage.setItem(`startTime_${planId}`, startTime);
                 localStorage.setItem(`totalPaused_${planId}`, totalPaused);
                 localStorage.setItem(`isPaused_${planId}`, isPausedLocal);
@@ -466,64 +452,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 startBtn.classList.replace('bg-green-500', 'bg-brand');
                 startTimer();
                 updateLocalProgress();
-                findCurrentState(data.completed_exercises);
+                syncExerciseState(data.completed_exercises);
                 loadExerciseUI();
             }
         } catch (err) { console.error("Load Error:", err); }
     }
 
-    function findCurrentState(completedIds) {
+    function syncExerciseState(completedIds) {
         if (!completedIds) return;
         completedIds.forEach(id => {
             let item = exercises.find(ex => ex.dataset.id == id);
             if(item) item.classList.add('completed');
         });
-        const nextIdx = exercises.findIndex(ex => !ex.classList.contains('completed'));
-        currentExerciseIndex = nextIdx === -1 ? exercises.length : nextIdx;
-        currentSet = 1;
+        
+        // Only trust localStorage if it's the SAME session
+        if (lastSessionId != sessionId) {
+            const nextIdx = exercises.findIndex(ex => !ex.classList.contains('completed'));
+            currentExerciseIndex = nextIdx === -1 ? exercises.length : nextIdx;
+            currentSet = 1;
+            saveInternalState();
+        }
+    }
+
+    function saveInternalState() {
+        localStorage.setItem(`curEx_${planId}`, currentExerciseIndex);
+        localStorage.setItem(`curSet_${planId}`, currentSet);
     }
 
     function loadExerciseUI() {
-        if (currentExerciseIndex >= exercises.length) {
-            finalizeSession();
-            return;
-        }
-
+        if (currentExerciseIndex >= exercises.length) { finalizeSession(); return; }
         exercises.forEach(ex => ex.classList.remove('active-exercise'));
         const activeEx = exercises[currentExerciseIndex];
         activeEx.classList.add('active-exercise');
         activeEx.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
         document.getElementById('activeExerciseName').innerText = activeEx.dataset.name;
         document.getElementById('activeExerciseSub').innerText = `Set ${currentSet} of ${activeEx.dataset.sets}`;
-        
-        // Update the button text to show current set
         const trigger = activeEx.querySelector('.complete-trigger');
-        if (trigger) {
-            trigger.innerHTML = `<span class="text-[10px] font-black">${currentSet}/${activeEx.dataset.sets}</span>`;
-        }
+        if (trigger) trigger.innerHTML = `<span class="text-[10px] font-black">${currentSet}/${activeEx.dataset.sets}</span>`;
     }
 
     document.querySelectorAll('.complete-trigger').forEach((btn, idx) => {
         btn.addEventListener('click', async function() {
             if (!sessionId || idx !== currentExerciseIndex || isResting) return;
-            
             hapticFeedback();
             const item = exercises[idx];
             const maxSets = parseInt(item.dataset.sets);
-
             if (currentSet < maxSets) {
                 currentSet++;
+                saveInternalState();
                 startRestTimer();
-                loadExerciseUI(); // Update UI to show next set
+                loadExerciseUI();
             } else {
-                // Exercise Fully Complete - Log to server
                 const res = await fetch("/api/exercise/complete", {
                     method: "POST",
                     headers: { "X-CSRF-TOKEN": token, "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                        session_id: sessionId, 
-                        exercise_id: item.dataset.id,
+                        session_id: sessionId, exercise_id: item.dataset.id,
                         sets: item.querySelector('.log-sets').value,
                         reps: item.querySelector('.log-reps').value,
                         weight: item.querySelector('.log-weight').value
@@ -534,25 +518,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast("Exercise Complete! 🔥");
                     currentExerciseIndex++;
                     currentSet = 1;
-                    
+                    saveInternalState();
                     if (currentExerciseIndex < exercises.length) {
-                        speak("Exercise complete. Next up, " + exercises[currentExerciseIndex].dataset.name);
+                        speak("Next, " + exercises[currentExerciseIndex].dataset.name);
                         startRestTimer();
-                    } else {
-                        finalizeSession();
-                    }
+                    } else { finalizeSession(); }
                     updateLocalProgress();
                 }
             }
         });
     });
 
-    function nextSetOrExercise() {
-        loadExerciseUI();
-        if (currentExerciseIndex < exercises.length) {
-            speak("Start set " + currentSet);
-        }
-    }
+    function nextSetOrExercise() { loadExerciseUI(); if (currentExerciseIndex < exercises.length) speak("Set " + currentSet); }
 
     function updateLocalProgress() {
         const done = document.querySelectorAll('.exercise-item.completed').length;
@@ -564,13 +541,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function finalizeSession() {
-        const res = await fetch(`/api/session/complete/${sessionId}`, {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': token }
-        });
+        const res = await fetch(`/api/session/complete/${sessionId}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
         const data = await res.json();
         stopTimer();
-        speak("Workout complete. Extraordinary effort today athlete.");
+        speak("Workout complete. Extraordinary effort.");
         document.getElementById('summaryTime').innerText = document.getElementById('sessionTimer').innerText;
         document.getElementById('summaryCalories').innerText = data.calories || 0;
         summaryScreen.classList.remove('hidden');

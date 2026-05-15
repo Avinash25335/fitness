@@ -1,295 +1,391 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Progress Tracker')
-@section('page-subtitle', 'Track your transformation journey')
+@section('page-title', 'Elite Analytics')
+@section('page-subtitle', 'Real-time performance intelligence & AI coaching')
 
 @section('content')
-<div class="space-y-6 fade-up">
+<div class="space-y-10 fade-up">
 
-    @php
-        $sortedLogs = $progressLogs->sortBy('log_date');
-        $hasEnoughData = $sortedLogs->count() >= 2;
-        $firstWeight = $hasEnoughData ? $sortedLogs->first()->weight : null;
-        $lastWeight  = $hasEnoughData ? $sortedLogs->last()->weight : null;
-        $totalChange = $hasEnoughData ? round($lastWeight - $firstWeight, 1) : null;
-        $streak      = $progressLogs->count(); // simplified streak = total logs
-    @endphp
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- ROW 1 ─ HERO STATS BAR                                                 --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+        @php
+            $heroStats = [
+                ['label' => 'Current Weight',  'value' => $currentWeight.' kg',    'color' => 'text-brand',       'icon' => '⚖️'],
+                ['label' => 'Goal Weight',      'value' => ($goalWeight ?: '--').' '.($goalWeight ? 'kg' : ''), 'color' => 'text-white', 'icon' => '🎯'],
+                ['label' => 'Total Change',     'value' => ($totalChange > 0 ? '+' : '').$totalChange.' kg', 'color' => $totalChange <= 0 ? 'text-brand' : 'text-orange-400', 'icon' => '📉'],
+                ['label' => 'Streak',           'value' => $streak.' days',         'color' => 'text-orange-400',  'icon' => '🔥'],
+                ['label' => 'This Month',       'value' => $workoutsThisMonth.' sessions', 'color' => 'text-purple-400', 'icon' => '🏋️'],
+                ['label' => 'Calories Burned',  'value' => number_format($totalCaloriesBurned).' kcal', 'color' => 'text-red-400', 'icon' => '🔥'],
+            ];
+        @endphp
+        @foreach($heroStats as $stat)
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-5 hover:border-brand/30 transition-all group">
+            <p class="text-xl mb-2">{{ $stat['icon'] }}</p>
+            <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">{{ $stat['label'] }}</p>
+            <p class="text-xl font-black {{ $stat['color'] }} group-hover:scale-105 transition-transform origin-left">{{ $stat['value'] }}</p>
+        </div>
+        @endforeach
+    </div>
 
-    <!-- Weight Change Summary Banner -->
-    @if($hasEnoughData)
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 flex items-center gap-4 shadow-lg hover:scale-105 transition-all duration-300">
-            <div class="w-12 h-12 rounded-xl {{ $totalChange <= 0 ? 'bg-green-500/10' : 'bg-orange-500/10' }} flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6 {{ $totalChange <= 0 ? 'text-green-400' : 'text-orange-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="{{ $totalChange <= 0 ? 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6' : 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }}"/>
+    {{-- Progress Bar --}}
+    <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8 relative overflow-hidden group shadow-[0_10px_40px_rgba(34,197,94,0.07)]">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-lg font-black text-white tracking-tight">Transformation Progress</h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Start: {{ $startingWeight }}kg → Goal: {{ $goalWeight ?: '--' }}kg</p>
+            </div>
+            <span class="text-3xl font-black text-brand">{{ $progressPercent }}%</span>
+        </div>
+        <div class="h-3 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
+            <div class="h-full bg-gradient-to-r from-brand to-green-400 rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.5)]" style="width: {{ $progressPercent }}%"></div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- ROW 2 ─ AI COACH PANEL                                                 --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-brand/20 rounded-[2.5rem] p-10">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-brand/20 flex items-center justify-center text-brand shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-0.5">Weight Change</p>
-                <p class="text-2xl font-extrabold {{ $totalChange <= 0 ? 'text-green-400' : 'text-orange-400' }}">
-                    {{ $totalChange > 0 ? '+' : '' }}{{ $totalChange }} kg
-                </p>
-                <p class="text-xs text-gray-500">since you started</p>
+                <span class="text-[10px] font-black text-brand uppercase tracking-[0.2em]">AI Performance Coach</span>
+                <p class="text-xs text-gray-500 mt-0.5">Rule-based intelligence engine — {{ count($aiInsights) }} insight(s) generated</p>
             </div>
         </div>
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 flex items-center gap-4 shadow-lg hover:scale-105 transition-all duration-300">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
-                <span class="text-2xl">🔥</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            @foreach($aiInsights as $insight)
+            @php
+                $borderColor = match($insight['type']) {
+                    'success' => 'border-brand/30 bg-brand/5',
+                    'warning' => 'border-orange-500/30 bg-orange-500/5',
+                    default   => 'border-blue-500/30 bg-blue-500/5',
+                };
+                $badgeColor = match($insight['type']) {
+                    'success' => 'bg-brand/20 text-brand',
+                    'warning' => 'bg-orange-500/20 text-orange-400',
+                    default   => 'bg-blue-500/20 text-blue-400',
+                };
+            @endphp
+            <div class="border {{ $borderColor }} rounded-2xl p-5 space-y-3">
+                <span class="inline-block px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest {{ $badgeColor }}">{{ strtoupper($insight['type']) }}</span>
+                <p class="text-sm text-gray-300 leading-relaxed font-medium">{{ $insight['message'] }}</p>
             </div>
-            <div>
-                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-0.5">Consistency Streak</p>
-                <p class="text-2xl font-extrabold text-purple-400">{{ $streak }} <span class="text-sm font-normal text-gray-500">entries</span></p>
-                <p class="text-xs text-gray-500">keep it going!</p>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- ROW 3 ─ CHARTS GRID                                                    --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+        {{-- Chart 1: Weight Trend --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-white tracking-tight">Weight Trend</h3>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Historical body weight</p>
+                </div>
+                <span class="text-xs font-black px-3 py-1.5 rounded-xl {{ $totalChange <= 0 ? 'bg-brand/10 text-brand' : 'bg-orange-500/10 text-orange-400' }}">
+                    {{ $totalChange > 0 ? '+' : '' }}{{ $totalChange }} KG
+                </span>
+            </div>
+            <div class="h-64">
+                <canvas id="weightChart"></canvas>
             </div>
         </div>
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 flex items-center gap-4 shadow-lg hover:scale-105 transition-all duration-300">
-            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
+
+        {{-- Chart 2: Weekly Workouts --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-white tracking-tight">Weekly Consistency</h3>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Sessions per week (last 8 weeks)</p>
+                </div>
+                <span class="text-xs font-black bg-purple-500/10 text-purple-400 px-3 py-1.5 rounded-xl">{{ $workoutsThisWeek }} this week</span>
             </div>
+            <div class="h-64">
+                <canvas id="workoutsChart"></canvas>
+            </div>
+        </div>
+
+        {{-- Chart 3: Calories Burned --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-white tracking-tight">Calories Burned</h3>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Weekly calorie expenditure</p>
+                </div>
+                <span class="text-xs font-black bg-red-500/10 text-red-400 px-3 py-1.5 rounded-xl">{{ number_format($totalCaloriesBurned) }} total</span>
+            </div>
+            <div class="h-64">
+                <canvas id="caloriesChart"></canvas>
+            </div>
+        </div>
+
+        {{-- Chart 4: Strength PR Graph --}}
+        <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-white tracking-tight">Strength Progression</h3>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Personal records over time</p>
+                </div>
+                <span class="text-xs font-black bg-yellow-500/10 text-yellow-400 px-3 py-1.5 rounded-xl">{{ count($prData) }} exercises tracked</span>
+            </div>
+            @if(count($prData) > 0)
+            <div class="h-64">
+                <canvas id="strengthChart"></canvas>
+            </div>
+            @else
+            <div class="h-64 flex items-center justify-center">
+                <p class="text-gray-600 font-black text-xs uppercase tracking-widest text-center">Complete workouts with weight logging<br>to unlock strength charts</p>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- ROW 4 ─ PR TABLE                                                        --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    @if(count($prData) > 0)
+    <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10">
+        <div class="flex items-center gap-3 mb-8">
+            <span class="text-2xl">🏆</span>
             <div>
-                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-0.5">Latest Weight</p>
-                <p class="text-2xl font-extrabold text-white">{{ $lastWeight }} <span class="text-sm font-normal text-gray-500">kg</span></p>
-                <p class="text-xs text-gray-500">BMI: {{ $profile?->bmi ? number_format($profile->bmi,1) : '--' }}</p>
+                <h3 class="text-xl font-black text-white tracking-tight">Personal Records</h3>
+                <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Your strength history</p>
             </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            @foreach($prData as $exercise => $pr)
+            <div class="bg-white/3 border border-white/5 rounded-2xl p-6 hover:border-brand/30 transition-all group">
+                <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">{{ $exercise }}</p>
+                <div class="flex items-end justify-between mt-3">
+                    <div>
+                        <p class="text-[8px] text-gray-600 uppercase font-black">Starting</p>
+                        <p class="text-lg font-black text-gray-400">{{ $pr['starting_weight'] }}kg</p>
+                    </div>
+                    <div class="text-center px-4">
+                        <svg class="w-4 h-4 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[8px] text-brand uppercase font-black">Current PR</p>
+                        <p class="text-2xl font-black text-white group-hover:text-brand transition-colors">{{ $pr['current_pr'] }}<span class="text-xs text-gray-500">kg</span></p>
+                    </div>
+                </div>
+                @if($pr['improvement'] > 0)
+                <div class="mt-4 pt-4 border-t border-white/5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[8px] text-gray-600 uppercase font-black">Improvement</span>
+                        <span class="text-xs font-black text-brand">+{{ $pr['improvement'] }}%</span>
+                    </div>
+                    <div class="h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-brand to-green-400 rounded-full" style="width: {{ min(100, $pr['improvement'] * 2) }}%"></div>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endforeach
         </div>
     </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left: Forms -->
-        <div class="space-y-5">
-
-            <!-- Log Weight Form -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-white mb-5 flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-                    Log Today's Weight
-                </h3>
-                <form action="{{ route('progress.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- ROW 5 ─ LOG + GOAL FORMS                                                --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="space-y-8">
+            <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10 space-y-8">
+                <h3 class="text-xl font-black text-white tracking-tight">Log Today's Weight</h3>
+                @if(session('success'))
+                <div class="bg-brand/10 border border-brand/20 text-brand px-4 py-3 rounded-xl text-sm font-bold">{{ session('success') }}</div>
+                @endif
+                <form action="{{ route('progress.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Weight (kg)</label>
-                        <input type="number" step="0.1" name="weight" placeholder="e.g. 75.5" required
-                               class="w-full bg-gray-900 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/50 transition-all duration-300 placeholder-gray-600 text-lg font-bold">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Weight (kg)</label>
+                        <input type="number" step="0.1" name="weight" placeholder="00.0" required
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-2xl font-black text-white focus:border-brand transition-all outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Date</label>
-                        <input type="date" name="log_date" value="{{ date('Y-m-d') }}" required
-                               class="w-full bg-gray-900 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/50 transition-all duration-300 text-sm">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Date</label>
+                        <input type="date" name="log_date" value="{{ date('Y-m-d') }}"
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-3 text-sm font-black text-white focus:border-brand transition-all outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                            Progress Photo <span class="text-gray-600 normal-case font-normal">(optional)</span>
-                        </label>
-                        <div class="relative group/upload">
-                            <input type="file" name="image" accept="image/*"
-                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="border-2 border-dashed border-gray-600 rounded-xl p-6 text-center hover:border-green-500 hover:bg-gray-700/50 transition-all duration-300">
-                                <svg class="w-8 h-8 text-gray-500 mx-auto mb-2 group-hover/upload:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <p class="text-xs text-gray-500">Click to upload photo</p>
-                                <p class="text-xs text-gray-600 mt-0.5">PNG, JPG up to 5MB</p>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit"
-                            class="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 hover:scale-105 shadow-lg shadow-green-500/20 transition-all duration-300 w-full text-sm font-bold flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Save Progress Entry
+                    <button type="submit" onclick="this.innerText='Saving...'"
+                            class="w-full bg-green-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all active:scale-95">
+                        Save Progress →
                     </button>
                 </form>
             </div>
-
-            <!-- Current Stats -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6 hover:scale-105 hover:shadow-green-500/10 transition-all duration-300">
-                <h3 class="text-xl font-bold text-white mb-4">Current Stats</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center py-2 border-b border-gray-700">
-                        <span class="text-sm text-gray-400">Weight</span>
-                        <span class="text-sm font-bold text-white">{{ $profile?->weight ?? '--' }} kg</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-700">
-                        <span class="text-sm text-gray-400">Height</span>
-                        <span class="text-sm font-bold text-white">{{ $profile?->height ?? '--' }} cm</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-700">
-                        <span class="text-sm text-gray-400">BMI</span>
-                        <span class="text-sm font-bold text-green-400">{{ $profile?->bmi ? number_format($profile->bmi, 1) : '--' }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2">
-                        <span class="text-sm text-gray-400">Goal</span>
-                        <span class="text-sm font-bold text-white capitalize">{{ str_replace('_', ' ', $profile?->goal ?? '--') }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Update Profile -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-white mb-4">Update Profile</h3>
-                <form action="{{ route('dashboard.profile.update') }}" method="POST" class="space-y-4">
+            <div class="bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10 space-y-8">
+                <h3 class="text-xl font-black text-white tracking-tight">Target Settings</h3>
+                <form action="{{ route('progress.goal.update') }}" method="POST" class="space-y-6">
                     @csrf
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Height (cm)</label>
-                        <input type="number" step="0.1" name="height" value="{{ $profile?->height }}" placeholder="170"
-                               class="w-full bg-gray-900 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/50 transition-all duration-300 placeholder-gray-600 text-sm">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Target Weight (kg)</label>
+                        <input type="number" step="0.1" name="goal_weight" value="{{ $goalWeight }}" placeholder="00.0" required
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-sm font-black text-white focus:border-brand transition-all outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Weight (kg)</label>
-                        <input type="number" step="0.1" name="weight" value="{{ $profile?->weight }}" placeholder="70"
-                               class="w-full bg-gray-900 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/50 transition-all duration-300 placeholder-gray-600 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Fitness Goal</label>
-                        <select name="goal"
-                                class="w-full bg-gray-900 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/50 transition-all duration-300 text-sm">
-                            <option value="">Select goal</option>
-                            <option value="weight_loss"  {{ $profile?->goal === 'weight_loss'  ? 'selected' : '' }}>Weight Loss</option>
-                            <option value="muscle_gain"  {{ $profile?->goal === 'muscle_gain'  ? 'selected' : '' }}>Muscle Gain</option>
-                            <option value="maintenance"  {{ $profile?->goal === 'maintenance'  ? 'selected' : '' }}>Maintenance</option>
-                        </select>
-                    </div>
-                    <button type="submit"
-                            class="border border-gray-600 text-gray-300 hover:text-white px-5 py-2.5 rounded-lg hover:bg-gray-700 transition-all duration-300 w-full text-sm font-bold">
-                        Update Stats
+                    <button type="submit" onclick="this.innerText='Updating...'"
+                            class="w-full border border-white/10 text-gray-400 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all">
+                        Update Target
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Right: Chart + History -->
-        <div class="lg:col-span-2 space-y-5">
-
-            <!-- Chart -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Weight Over Time</h3>
-                        <p class="text-xs text-gray-500 mt-0.5">{{ $sortedLogs->count() }} data points recorded</p>
+        {{-- History --}}
+        <div class="lg:col-span-2 bg-gray-800 border border-gray-700 rounded-[2.5rem] p-10">
+            <h3 class="text-xl font-black text-white tracking-tight mb-8">Transformation History</h3>
+            <div class="grid grid-cols-1 gap-4">
+                @forelse($progressLogs->sortByDesc('log_date')->take(8) as $log)
+                <div class="group flex items-center justify-between p-5 rounded-[2rem] bg-white/5 border border-white/5 hover:border-brand/30 transition-all">
+                    <div class="flex items-center gap-5">
+                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-brand group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-xl font-black text-white">{{ $log->weight }} <span class="text-xs font-bold text-gray-500">KG</span></p>
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ \Carbon\Carbon::parse($log->log_date)->format('M d, Y') }}</p>
+                        </div>
                     </div>
-                    @if($hasEnoughData)
-                    <span class="text-xs px-3 py-1.5 rounded-full font-bold border
-                        {{ $totalChange <= 0
-                            ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                            : 'bg-orange-500/10 text-orange-400 border-orange-500/30' }}">
-                        {{ $totalChange > 0 ? '▲ +' : '▼ ' }}{{ $totalChange }} kg total
-                    </span>
-                    @endif
-                </div>
-                <div class="h-72">
-                    <canvas id="progressChart"></canvas>
-                </div>
-            </div>
-
-            <!-- History Table -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-bold text-white mb-5">Progress History</h3>
-                @if($progressLogs->isNotEmpty())
-                <div class="space-y-2">
-                    @foreach($progressLogs->sortByDesc('log_date')->take(10) as $log)
-                    <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-900 hover:bg-gray-700 transition-all duration-200 border border-gray-700 hover:border-green-500/30">
-                        <div class="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-                            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-semibold text-white">{{ $log->weight }} kg</p>
-                            <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($log->log_date)->format('M d, Y') }}</p>
-                        </div>
+                    <div class="text-right">
                         @if($log->transformation_image)
-                        <img src="{{ asset('storage/' . $log->transformation_image) }}"
-                             class="w-10 h-10 rounded-lg object-cover border border-gray-700">
+                        <img src="{{ asset('storage/' . $log->transformation_image) }}" class="w-12 h-12 rounded-xl object-cover border border-white/10 group-hover:scale-125 transition-transform">
+                        @else
+                        <span class="text-[9px] font-black text-gray-600 uppercase tracking-widest">No Photo</span>
                         @endif
                     </div>
-                    @endforeach
                 </div>
-                @else
-                <div class="text-center py-12">
-                    <svg class="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
-                    </svg>
-                    <p class="text-gray-500 font-semibold">No progress logged yet.</p>
-                    <p class="text-gray-600 text-sm mt-1">Use the form on the left to start tracking!</p>
-                </div>
-                @endif
+                @empty
+                <p class="text-center text-gray-600 font-black uppercase tracking-widest text-xs py-10">Start your journey today</p>
+                @endforelse
             </div>
         </div>
     </div>
+
 </div>
 @endsection
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('progressChart').getContext('2d');
-const grad = ctx.createLinearGradient(0, 0, 0, 288);
-grad.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
-grad.addColorStop(0.6, 'rgba(34, 197, 94, 0.08)');
-grad.addColorStop(1, 'rgba(34, 197, 94, 0)');
+document.addEventListener('DOMContentLoaded', function() {
 
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($sortedLogs->pluck('log_date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))->toArray()) !!},
-        datasets: [{
-            label: 'Weight (kg)',
-            data: {!! json_encode($sortedLogs->pluck('weight')->toArray()) !!},
-            borderColor: '#22c55e',
-            borderWidth: 2.5,
-            pointBackgroundColor: '#22c55e',
-            pointBorderColor: '#1f2937',
-            pointBorderWidth: 2.5,
-            pointRadius: 6,
-            pointHoverRadius: 9,
-            pointHoverBackgroundColor: '#22c55e',
-            pointHoverBorderColor: '#fff',
-            pointHoverBorderWidth: 2,
-            fill: true,
-            backgroundColor: grad,
-            tension: 0.45,
-        }]
-    },
-    options: {
+    const CHART_DEFAULTS = {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: false,
-                grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-                ticks: { color: '#6b7280', font: { family: 'Inter', size: 11 }, padding: 8 }
+        plugins: { legend: { display: false } }
+    };
+
+    const gridColor  = 'rgba(255,255,255,0.04)';
+    const tickColor  = '#4b5563';
+    const tooltipBg  = '#1f2937';
+    const axisStyle  = { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, font: { weight: '900', size: 10 }, padding: 8 } };
+
+    // ── 1. Weight Trend ────────────────────────────────────────────────────────
+    const wCtx = document.getElementById('weightChart')?.getContext('2d');
+    if (wCtx) {
+        const wGrad = wCtx.createLinearGradient(0, 0, 0, 300);
+        wGrad.addColorStop(0, 'rgba(34,197,94,0.25)');
+        wGrad.addColorStop(1, 'rgba(34,197,94,0)');
+        new Chart(wCtx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($progressLogs->pluck('log_date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))->toArray()) !!},
+                datasets: [{ label: 'Weight (kg)', data: {!! json_encode($progressLogs->pluck('weight')->toArray()) !!},
+                    borderColor: '#22c55e', backgroundColor: wGrad, borderWidth: 3, fill: true, tension: 0.4,
+                    pointRadius: 5, pointBackgroundColor: '#22c55e', pointBorderColor: '#111827', pointBorderWidth: 2, pointHoverRadius: 8 }]
             },
-            x: {
-                grid: { display: false },
-                ticks: { color: '#6b7280', font: { family: 'Inter', size: 11 }, padding: 6 }
-            }
-        },
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#111827',
-                titleColor: '#f9fafb',
-                bodyColor: '#9ca3af',
-                borderColor: 'rgba(34, 197, 94, 0.4)',
-                borderWidth: 1,
-                titleFont: { family: 'Inter', size: 12, weight: 'bold' },
-                bodyFont: { family: 'Inter', size: 12 },
-                padding: 12,
-                cornerRadius: 10,
-                displayColors: false,
-                callbacks: { label: ctx => `${ctx.parsed.y} kg` }
-            }
-        }
+            options: { ...CHART_DEFAULTS, scales: { y: axisStyle, x: { ...axisStyle, grid: { display: false } } },
+                plugins: { ...CHART_DEFAULTS.plugins, tooltip: { backgroundColor: tooltipBg, titleFont: { size: 10, weight: '900' }, bodyFont: { size: 14, weight: '900' }, padding: 12, cornerRadius: 12, displayColors: false, callbacks: { label: c => `${c.parsed.y} kg` } } } }
+        });
     }
+
+    // ── 2. Weekly Workouts ─────────────────────────────────────────────────────
+    const wkCtx = document.getElementById('workoutsChart')?.getContext('2d');
+    if (wkCtx) {
+        new Chart(wkCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($weekLabels) !!},
+                datasets: [{ label: 'Sessions', data: {!! json_encode($weeklyWorkouts) !!},
+                    backgroundColor: 'rgba(168,85,247,0.4)', borderColor: 'rgba(168,85,247,0.8)', borderWidth: 2, borderRadius: 8 }]
+            },
+            options: { ...CHART_DEFAULTS, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, stepSize: 1 } }, x: { ...axisStyle, grid: { display: false } } },
+                plugins: { ...CHART_DEFAULTS.plugins, tooltip: { backgroundColor: tooltipBg, padding: 12, cornerRadius: 12, displayColors: false, callbacks: { label: c => `${c.parsed.y} session(s)` } } } }
+        });
+    }
+
+    // ── 3. Calories Burned ─────────────────────────────────────────────────────
+    const calCtx = document.getElementById('caloriesChart')?.getContext('2d');
+    if (calCtx) {
+        const calGrad = calCtx.createLinearGradient(0, 0, 0, 300);
+        calGrad.addColorStop(0, 'rgba(249,115,22,0.5)');
+        calGrad.addColorStop(1, 'rgba(249,115,22,0.05)');
+        new Chart(calCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($weekLabels) !!},
+                datasets: [{ label: 'Calories', data: {!! json_encode($weeklyCalories) !!},
+                    backgroundColor: calGrad, borderColor: 'rgba(249,115,22,0.9)', borderWidth: 2, borderRadius: 8 }]
+            },
+            options: { ...CHART_DEFAULTS, scales: { y: axisStyle, x: { ...axisStyle, grid: { display: false } } },
+                plugins: { ...CHART_DEFAULTS.plugins, tooltip: { backgroundColor: tooltipBg, padding: 12, cornerRadius: 12, displayColors: false, callbacks: { label: c => `${c.parsed.y} kcal` } } } }
+        });
+    }
+
+    // ── 4. Strength PRs ────────────────────────────────────────────────────────
+    @if(count($prData) > 0)
+    const strCtx = document.getElementById('strengthChart')?.getContext('2d');
+    if (strCtx) {
+        const exercises = {!! json_encode(array_keys($prData)) !!};
+        const colors = ['#22c55e', '#f59e0b', '#a855f7', '#3b82f6', '#ef4444', '#06b6d4'];
+
+        const datasets = exercises.slice(0, 6).map((name, i) => {
+            const history = {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->map(fn($h) => ['date' => $h['date'], 'weight' => $h['weight']])->toArray())->toArray()) !!}[name] || [];
+            return {
+                label: name,
+                data: history.map(h => h.weight),
+                borderColor: colors[i % colors.length],
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                tension: 0.3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBackgroundColor: colors[i % colors.length],
+                pointBorderColor: '#111827',
+                pointBorderWidth: 2,
+            };
+        });
+
+        const allDates = [...new Set(exercises.slice(0, 6).flatMap(name => {
+            const h = {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->pluck('date')->toArray())->toArray()) !!}[name] || [];
+            return h;
+        }))];
+
+        new Chart(strCtx, {
+            type: 'line',
+            data: { labels: allDates, datasets },
+            options: { ...CHART_DEFAULTS,
+                plugins: { ...CHART_DEFAULTS.plugins,
+                    legend: { display: true, labels: { color: '#9ca3af', font: { size: 10, weight: '900' }, padding: 16, usePointStyle: true } },
+                    tooltip: { backgroundColor: tooltipBg, padding: 12, cornerRadius: 12, callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y}kg` } }
+                },
+                scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, callback: v => v + 'kg' } }, x: { ...axisStyle, grid: { display: false } } }
+            }
+        });
+    }
+    @endif
 });
 </script>
 @endsection
