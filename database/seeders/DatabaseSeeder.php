@@ -290,5 +290,11 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
+
+        // Call additional modular seeders
+        $this->call([
+            TrainerAvailabilitySeeder::class,
+            AchievementSeeder::class,
+        ]);
     }
 }
