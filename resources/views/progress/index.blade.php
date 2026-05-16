@@ -366,7 +366,24 @@ function filterInsights(filter) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const CHART_DEFAULTS = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+    const CHART_DEFAULTS = { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+            legend: { 
+                display: true, 
+                position: 'top',
+                align: 'end',
+                labels: { 
+                    color: tickColor, 
+                    font: { size: 10, weight: '900' }, 
+                    usePointStyle: true,
+                    padding: 20
+                },
+                onClick: (e) => e.stopPropagation() // Disable click-to-hide (prevents slash)
+            } 
+        } 
+    };
     const gridColor  = window.FitCore.colors.grid();
     const tickColor  = window.FitCore.colors.text();
     const tooltipBg  = window.FitCore.colors.tooltip();
@@ -433,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(strCtx, {
             type: 'line',
             data: { labels: allDates, datasets },
-            options: { ...CHART_DEFAULTS, plugins: { legend: { display: true, labels: { color: tickColor, font: { size: 10, weight: '900' }, usePointStyle: true } }, tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } }, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, callback: v => v + 'kg' } }, x: { ...axisStyle, grid: { display: false } } } }
+            options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } }, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, callback: v => v + 'kg' } }, x: { ...axisStyle, grid: { display: false } } } }
         });
     }
     @endif
