@@ -46,7 +46,11 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h4 class="text-xl font-black text-main-area tracking-tight">Personal Records</h4>
-                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Global Ranking: #{{ $leaderboard->search(fn($s) => $user && $s->user_id === $user->id) + 1 ?: '--' }}</p>
+                    @php
+                        $userRank = $leaderboard->search(fn($s) => $user && $s->user_id === $user->id);
+                        $rankDisplay = $userRank !== false ? $userRank + 1 : '--';
+                    @endphp
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Global Ranking: #{{ $rankDisplay }}</p>
                 </div>
                 <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl bg-adaptive border border-adaptive">🏅</div>
             </div>
@@ -120,14 +124,14 @@
             </div>
             <div class="space-y-4">
                 @foreach($leaderboard->take(5) as $index => $stat)
-                <div class="flex items-center justify-between p-4 rounded-2xl transition-all {{ $stat->user_id === $user->id ? 'bg-brand/10 border border-brand/20 scale-[1.02]' : 'bg-white/5 border border-white/5 bg-adaptive border-adaptive shadow-sm' }}">
+                <div class="flex items-center justify-between p-4 rounded-2xl transition-all {{ $user && $stat->user_id === $user->id ? 'bg-brand/10 border border-brand/20 scale-[1.02]' : 'bg-white/5 border border-white/5 bg-adaptive border-adaptive shadow-sm' }}">
                     <div class="flex items-center gap-4">
                         <span class="w-6 text-center text-xs font-black {{ $index < 3 ? 'text-yellow-500' : 'text-gray-500' }}">#{{ $index + 1 }}</span>
                         <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black text-main-area bg-adaptive border border-adaptive">
-                            {{ substr($stat->user->name, 0, 1) }}
+                            {{ substr($stat->user->name ?? 'U', 0, 1) }}
                         </div>
                         <div>
-                            <p class="text-xs font-black text-main-area">{{ $stat->user->name }}</p>
+                            <p class="text-xs font-black text-main-area">{{ $stat->user->name ?? 'Unknown Athlete' }}</p>
                             <p class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Level {{ $stat->level }}</p>
                         </div>
                     </div>

@@ -44,15 +44,38 @@ class ProgressController extends Controller
         // ── Streak ─────────────────────────────────────────────────────────────
         $streak   = 0;
         $today    = now()->startOfDay();
-        $logsDesc = $user->progressLogs()->orderBy('log_date', 'desc')->get();
-        foreach ($logsDesc as $i => $log) {
-            $logDate = Carbon::parse($log->log_date)->startOfDay();
-            if ($logDate->diffInDays($today) == $i) {
+        
+        // Group by unique date to prevent multiple logs on the same day breaking the streak
+        $uniqueLogDates = $user->progressLogs()
+            ->orderBy('log_date', 'desc')
+            ->get()
+            ->map(fn($log) => Carbon::parse($log->log_date)->startOfDay()->format('Y-m-d'))
+            ->unique()
+            ->values();
+
+        if ($uniqueLogDates->isNotEmpty()) {
+            $firstLogDate = Carbon::parse($uniqueLogDates->first());
+            $expectedDate = $today->copy();
+            
+            if ($firstLogDate->equalTo($today)) {
                 $streak++;
-            } elseif ($logDate->diffInDays($today) == $i + 1 && $i == 0) {
+                $expectedDate->subDay();
+                $uniqueLogDates->shift();
+            } elseif ($firstLogDate->equalTo($today->copy()->subDay())) {
                 $streak++;
+                $expectedDate->subDays(2);
+                $uniqueLogDates->shift();
             } else {
-                break;
+                $uniqueLogDates = collect();
+            }
+
+            foreach ($uniqueLogDates as $dateStr) {
+                if (Carbon::parse($dateStr)->equalTo($expectedDate)) {
+                    $streak++;
+                    $expectedDate->subDay();
+                } else {
+                    break;
+                }
             }
         }
 
@@ -178,8 +201,16 @@ class ProgressController extends Controller
         $achievements = $user->achievements;
         $allAchievements = \App\Models\Achievement::all();
         
-        $nextLevelXp = pow(($user->stat->level ?? 1), 2) * 100;
-        $progressToNextLevel = (($user->stat->xp ?? 0) / max(1, $nextLevelXp)) * 100;
+        $currentLevel = $user->stat->level ?? 1;
+        $currentXp = $user->stat->xp ?? 0;
+        
+        $baseLevelXp = pow($currentLevel - 1, 2) * 100;
+        $nextLevelXp = pow($currentLevel, 2) * 100;
+        
+        $xpIntoLevel = max(0, $currentXp - $baseLevelXp);
+        $xpNeededForLevel = max(1, $nextLevelXp - $baseLevelXp);
+        
+        $progressToNextLevel = ($xpIntoLevel / $xpNeededForLevel) * 100;
 
         // Update insight if AI data is available
         if (isset($aiInsights[0]['message'])) {
