@@ -448,13 +448,33 @@ document.addEventListener('DOMContentLoaded', function() {
     if (strCtx) {
         const exercises = {!! json_encode(array_keys($prData)) !!};
         const colors = [brandHex, '#f59e0b', '#a855f7', '#3b82f6', '#ef4444', '#06b6d4'];
-        const datasets = exercises.slice(0, 6).map((name, i) => {
-            const history = {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->map(fn($h) => ['date' => $h['date'], 'weight' => $h['weight']])->toArray())->toArray()) !!}[name] || [];
-            return { label: name, data: history.map(h => h.weight), borderColor: colors[i % colors.length], backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 5, pointBackgroundColor: colors[i % colors.length], pointBorderColor: window.FitCore.isLight() ? '#fff' : '#0a0f1a' };
-        });
         const allDates = [...new Set(exercises.slice(0, 6).flatMap(name => {
             return {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->pluck('date')->toArray())->toArray()) !!}[name] || [];
-        }))];
+        }))].sort((a, b) => new Date(a + ' 2024') - new Date(b + ' 2024')); // basic sort
+
+        const datasets = exercises.slice(0, 6).map((name, i) => {
+            const history = {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->map(fn($h) => ['date' => $h['date'], 'weight' => $h['weight']])->toArray())->toArray()) !!}[name] || [];
+            
+            // Map the history values to the exact index of the allDates array
+            const dataMapped = allDates.map(date => {
+                const record = history.find(h => h.date === date);
+                return record ? record.weight : null;
+            });
+
+            return { 
+                label: name, 
+                data: dataMapped, 
+                spanGaps: true,
+                borderColor: colors[i % colors.length], 
+                backgroundColor: 'transparent', 
+                borderWidth: 2.5, 
+                tension: 0.3, 
+                pointRadius: 5, 
+                pointBackgroundColor: colors[i % colors.length], 
+                pointBorderColor: window.FitCore.isLight() ? '#fff' : '#0a0f1a' 
+            };
+        });
+
         new Chart(strCtx, {
             type: 'line',
             data: { labels: allDates, datasets },
