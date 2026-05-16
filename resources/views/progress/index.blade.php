@@ -366,6 +366,13 @@ function filterInsights(filter) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const gridColor  = window.FitCore.colors.grid();
+    const tickColor  = window.FitCore.colors.text();
+    const tooltipBg  = window.FitCore.colors.tooltip();
+    const brandRgb   = window.FitCore.colors.brandRgb();
+    const brandHex   = window.FitCore.brandHex();
+    const axisStyle  = { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, font: { weight: '900', size: 10 }, padding: 8 } };
+
     const CHART_DEFAULTS = { 
         responsive: true, 
         maintainAspectRatio: false, 
@@ -380,28 +387,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     usePointStyle: true,
                     padding: 20
                 },
-                onClick: (e) => e.stopPropagation() // Disable click-to-hide (prevents slash)
+                onClick: (e) => e.stopPropagation() // Disable click-to-hide
             } 
         } 
     };
-    const gridColor  = window.FitCore.colors.grid();
-    const tickColor  = window.FitCore.colors.text();
-    const tooltipBg  = window.FitCore.colors.tooltip();
-    const axisStyle  = { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, font: { weight: '900', size: 10 }, padding: 8 } };
+    const tooltipPlugin = { tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } };
 
     // 1. Weight Trend
     const wCtx = document.getElementById('weightChart')?.getContext('2d');
     if (wCtx) {
         const wGrad = wCtx.createLinearGradient(0, 0, 0, 300);
-        wGrad.addColorStop(0, 'rgba(34,197,94,0.25)');
-        wGrad.addColorStop(1, 'rgba(34,197,94,0)');
+        wGrad.addColorStop(0, `rgba(${brandRgb},0.25)`);
+        wGrad.addColorStop(1, `rgba(${brandRgb},0)`);
         new Chart(wCtx, {
             type: 'line',
             data: {
                 labels: {!! json_encode($progressLogs->pluck('log_date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))->toArray()) !!},
-                datasets: [{ label: 'Weight', data: {!! json_encode($progressLogs->pluck('weight')->toArray()) !!}, borderColor: '#22c55e', backgroundColor: wGrad, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 5, pointBorderColor: window.FitCore.isLight() ? '#fff' : '#0a0f1a' }]
+                datasets: [{ label: 'Weight (kg)', data: {!! json_encode($progressLogs->pluck('weight')->toArray()) !!}, borderColor: brandHex, backgroundColor: wGrad, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: brandHex, pointBorderColor: window.FitCore.isLight() ? '#fff' : '#0a0f1a' }]
             },
-            options: { ...CHART_DEFAULTS, scales: { y: axisStyle, x: { ...axisStyle, grid: { display: false } } }, plugins: { tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } } }
+            options: { ...CHART_DEFAULTS, scales: { y: axisStyle, x: { ...axisStyle, grid: { display: false } } }, plugins: { ...CHART_DEFAULTS.plugins, ...tooltipPlugin } }
         });
     }
 
@@ -414,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: {!! json_encode($weekLabels) !!},
                 datasets: [{ label: 'Sessions', data: {!! json_encode($weeklyWorkouts) !!}, backgroundColor: 'rgba(168,85,247,0.4)', borderColor: 'rgba(168,85,247,0.8)', borderWidth: 2, borderRadius: 8 }]
             },
-            options: { ...CHART_DEFAULTS, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, stepSize: 1 } }, x: { ...axisStyle, grid: { display: false } } }, plugins: { tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } } }
+            options: { ...CHART_DEFAULTS, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, stepSize: 1 } }, x: { ...axisStyle, grid: { display: false } } }, plugins: { ...CHART_DEFAULTS.plugins, ...tooltipPlugin } }
         });
     }
 
@@ -430,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: {!! json_encode($weekLabels) !!},
                 datasets: [{ label: 'Calories', data: {!! json_encode($weeklyCalories) !!}, backgroundColor: calGrad, borderColor: 'rgba(249,115,22,0.9)', borderWidth: 2, borderRadius: 8 }]
             },
-            options: { ...CHART_DEFAULTS, scales: { y: axisStyle, x: { ...axisStyle, grid: { display: false } } }, plugins: { tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } } }
+            options: { ...CHART_DEFAULTS, scales: { y: axisStyle, x: { ...axisStyle, grid: { display: false } } }, plugins: { ...CHART_DEFAULTS.plugins, ...tooltipPlugin } }
         });
     }
 
@@ -439,10 +443,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const strCtx = document.getElementById('strengthChart')?.getContext('2d');
     if (strCtx) {
         const exercises = {!! json_encode(array_keys($prData)) !!};
-        const colors = ['#22c55e', '#f59e0b', '#a855f7', '#3b82f6', '#ef4444', '#06b6d4'];
+        const colors = [brandHex, '#f59e0b', '#a855f7', '#3b82f6', '#ef4444', '#06b6d4'];
         const datasets = exercises.slice(0, 6).map((name, i) => {
             const history = {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->map(fn($h) => ['date' => $h['date'], 'weight' => $h['weight']])->toArray())->toArray()) !!}[name] || [];
-            return { label: name, data: history.map(h => h.weight), borderColor: colors[i % colors.length], backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 5, pointBorderColor: window.FitCore.isLight() ? '#fff' : '#0a0f1a' };
+            return { label: name, data: history.map(h => h.weight), borderColor: colors[i % colors.length], backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 5, pointBackgroundColor: colors[i % colors.length], pointBorderColor: window.FitCore.isLight() ? '#fff' : '#0a0f1a' };
         });
         const allDates = [...new Set(exercises.slice(0, 6).flatMap(name => {
             return {!! json_encode(collect($prData)->map(fn($v) => collect($v['history'])->pluck('date')->toArray())->toArray()) !!}[name] || [];
@@ -450,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(strCtx, {
             type: 'line',
             data: { labels: allDates, datasets },
-            options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { backgroundColor: tooltipBg, titleColor: tickColor, bodyColor: tickColor, padding: 12, cornerRadius: 12 } }, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, callback: v => v + 'kg' } }, x: { ...axisStyle, grid: { display: false } } } }
+            options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, ...tooltipPlugin }, scales: { y: { ...axisStyle, ticks: { ...axisStyle.ticks, callback: v => v + 'kg' } }, x: { ...axisStyle, grid: { display: false } } } }
         });
     }
     @endif

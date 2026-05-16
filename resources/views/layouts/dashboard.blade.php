@@ -525,17 +525,31 @@
             });
         }
     </script>
-    @yield('scripts')
     <script>
+        // FitCore Global API – must be defined BEFORE page scripts run
         window.FitCore = {
             isLight: () => document.documentElement.classList.contains('light-mode'),
+            // Convert a CSS hex colour to an RGB triplet string e.g. "34,197,94"
+            _hexToRgb: (hex) => {
+                const r = parseInt(hex.slice(1,3),16);
+                const g = parseInt(hex.slice(3,5),16);
+                const b = parseInt(hex.slice(5,7),16);
+                return `${r},${g},${b}`;
+            },
+            // Get the current --brand CSS variable value
+            brandHex: () => {
+                const v = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim();
+                return v || '#22c55e';
+            },
             colors: {
-                brand: '#22c55e',
-                grid: () => document.documentElement.classList.contains('light-mode') ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)',
-                text: () => document.documentElement.classList.contains('light-mode') ? '#1f2937' : '#9ca3af',
-                tooltip: () => document.documentElement.classList.contains('light-mode') ? '#ffffff' : '#1f2937'
+                // Returns "r,g,b" of the current brand accent for use in rgba()
+                brandRgb: () => window.FitCore._hexToRgb(window.FitCore.brandHex()),
+                grid:    () => document.documentElement.classList.contains('light-mode') ? 'rgba(0,0,0,0.05)'  : 'rgba(255,255,255,0.04)',
+                text:    () => document.documentElement.classList.contains('light-mode') ? '#1f2937'            : '#9ca3af',
+                tooltip: () => document.documentElement.classList.contains('light-mode') ? '#ffffff'            : '#1f2937'
             }
         };
     </script>
+    @yield('scripts')
 </body>
 </html>
