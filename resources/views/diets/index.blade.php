@@ -26,26 +26,26 @@
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">Gender</label>
                     <select id="input_gender" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                        <option value="male" {{ ($profile->gender ?? '') == 'male' ? 'selected' : '' }} class="bg-adaptive text-main-area">Male</option>
-                        <option value="female" {{ ($profile->gender ?? '') == 'female' ? 'selected' : '' }} class="bg-adaptive text-main-area">Female</option>
+                        <option value="male" {{ ($profile->gender ?? '') == 'male' ? 'selected' : '' }}>Male</option>
+                        <option value="female" {{ ($profile->gender ?? '') == 'female' ? 'selected' : '' }}>Female</option>
                     </select>
                 </div>
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">Target Goal</label>
                     <select id="input_goal" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                        <option value="cut" {{ ($profile->goal ?? '') == 'cut' ? 'selected' : '' }} class="bg-adaptive text-main-area">Cut (Fat Loss)</option>
-                        <option value="bulk" {{ ($profile->goal ?? '') == 'bulk' ? 'selected' : '' }} class="bg-adaptive text-main-area">Bulk (Muscle Gain)</option>
-                        <option value="maintain" {{ ($profile->goal ?? '') == 'maintain' ? 'selected' : '' }} class="bg-adaptive text-main-area">Maintain</option>
+                        <option value="cut" {{ ($profile->goal ?? '') == 'cut' ? 'selected' : '' }}>Cut (Fat Loss)</option>
+                        <option value="bulk" {{ ($profile->goal ?? '') == 'bulk' ? 'selected' : '' }}>Bulk (Muscle Gain)</option>
+                        <option value="maintain" {{ ($profile->goal ?? '') == 'maintain' ? 'selected' : '' }}>Maintain</option>
                     </select>
                 </div>
                 <div class="space-y-2">
                     <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">Activity Level</label>
                     <select id="input_activity" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                        <option value="sedentary" {{ ($profile->activity_level ?? '') == 'sedentary' ? 'selected' : '' }} class="bg-adaptive text-main-area">Sedentary</option>
-                        <option value="light" {{ ($profile->activity_level ?? '') == 'light' ? 'selected' : '' }} class="bg-adaptive text-main-area">Lightly Active</option>
-                        <option value="moderate" {{ ($profile->activity_level ?? '') == 'moderate' ? 'selected' : '' }} class="bg-adaptive text-main-area">Moderately Active</option>
-                        <option value="active" {{ ($profile->activity_level ?? '') == 'active' ? 'selected' : '' }} class="bg-adaptive text-main-area">Very Active</option>
-                        <option value="extra_active" {{ ($profile->activity_level ?? '') == 'extra_active' ? 'selected' : '' }} class="bg-adaptive text-main-area">Extra Active</option>
+                        <option value="sedentary" {{ ($profile->activity_level ?? '') == 'sedentary' ? 'selected' : '' }}>Sedentary</option>
+                        <option value="light" {{ ($profile->activity_level ?? '') == 'light' ? 'selected' : '' }}>Lightly Active</option>
+                        <option value="moderate" {{ ($profile->activity_level ?? '') == 'moderate' ? 'selected' : '' }}>Moderately Active</option>
+                        <option value="active" {{ ($profile->activity_level ?? '') == 'active' ? 'selected' : '' }}>Very Active</option>
+                        <option value="extra_active" {{ ($profile->activity_level ?? '') == 'extra_active' ? 'selected' : '' }}>Extra Active</option>
                     </select>
                 </div>
             </div>

@@ -44,8 +44,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
+            color-scheme: dark;
             --primary: #f43f5e;
             --secondary: #fbbf24;
+        }
+        .light-mode {
+            color-scheme: light;
         }
         body {
             background-color: #020617;

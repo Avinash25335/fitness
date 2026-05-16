@@ -80,8 +80,8 @@
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Gender</label>
                             <select name="gender" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                                <option value="male" {{ ($user->gender ?? 'male') == 'male' ? 'selected' : '' }} class="bg-adaptive text-main-area">Male</option>
-                                <option value="female" {{ ($user->gender ?? 'male') == 'female' ? 'selected' : '' }} class="bg-adaptive text-main-area">Female</option>
+                                <option value="male" {{ ($user->gender ?? 'male') == 'male' ? 'selected' : '' }}>Male</option>
+                                <option value="female" {{ ($user->gender ?? 'male') == 'female' ? 'selected' : '' }}>Female</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -106,19 +106,19 @@
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Primary Fitness Goal</label>
                             <select name="goal" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                                <option value="weight_loss" {{ ($profile->goal ?? 'maintenance') == 'weight_loss' ? 'selected' : '' }} class="bg-adaptive text-main-area">Weight Loss (Cut)</option>
-                                <option value="muscle_gain" {{ ($profile->goal ?? 'maintenance') == 'muscle_gain' ? 'selected' : '' }} class="bg-adaptive text-main-area">Muscle Gain (Bulk)</option>
-                                <option value="maintenance" {{ ($profile->goal ?? 'maintenance') == 'maintenance' ? 'selected' : '' }} class="bg-adaptive text-main-area">Maintenance</option>
+                                <option value="weight_loss" {{ ($profile->goal ?? 'maintenance') == 'weight_loss' ? 'selected' : '' }}>Weight Loss (Cut)</option>
+                                <option value="muscle_gain" {{ ($profile->goal ?? 'maintenance') == 'muscle_gain' ? 'selected' : '' }}>Muscle Gain (Bulk)</option>
+                                <option value="maintenance" {{ ($profile->goal ?? 'maintenance') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
                             </select>
                         </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Activity Coefficient</label>
                             <select name="activity_level" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                                <option value="sedentary" {{ ($profile->activity_level ?? 'moderate') == 'sedentary' ? 'selected' : '' }} class="bg-adaptive text-main-area">Sedentary (Low)</option>
-                                <option value="light" {{ ($profile->activity_level ?? 'moderate') == 'light' ? 'selected' : '' }} class="bg-adaptive text-main-area">Lightly Active</option>
-                                <option value="moderate" {{ ($profile->activity_level ?? 'moderate') == 'moderate' ? 'selected' : '' }} class="bg-adaptive text-main-area">Moderately Active</option>
-                                <option value="active" {{ ($profile->activity_level ?? 'moderate') == 'active' ? 'selected' : '' }} class="bg-adaptive text-main-area">Very Active</option>
-                                <option value="extra_active" {{ ($profile->activity_level ?? 'moderate') == 'extra_active' ? 'selected' : '' }} class="bg-adaptive text-main-area">Extra Active (Pro)</option>
+                                <option value="sedentary" {{ ($profile->activity_level ?? 'moderate') == 'sedentary' ? 'selected' : '' }}>Sedentary (Low)</option>
+                                <option value="light" {{ ($profile->activity_level ?? 'moderate') == 'light' ? 'selected' : '' }}>Lightly Active</option>
+                                <option value="moderate" {{ ($profile->activity_level ?? 'moderate') == 'moderate' ? 'selected' : '' }}>Moderately Active</option>
+                                <option value="active" {{ ($profile->activity_level ?? 'moderate') == 'active' ? 'selected' : '' }}>Very Active</option>
+                                <option value="extra_active" {{ ($profile->activity_level ?? 'moderate') == 'extra_active' ? 'selected' : '' }}>Extra Active (Pro)</option>
                             </select>
                         </div>
                     </div>

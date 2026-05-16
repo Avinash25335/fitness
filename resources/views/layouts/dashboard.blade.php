@@ -34,6 +34,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style type="text/tailwindcss">
         :root {
+            color-scheme: dark;
             --brand: #22c55e;
             --brand-dark: #16a34a;
             --surface: #0a0f1a;
@@ -48,6 +49,7 @@
         }
 
         .light-mode {
+            color-scheme: light;
             --brand: #22c55e;
             --brand-dark: #15803d;
             --surface: #f1f5f9;

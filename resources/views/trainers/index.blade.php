@@ -99,7 +99,7 @@
                                 <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Select Slot</label>
                                 <div class="relative">
                                     <select id="slot_{{ $trainer->id }}" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-black text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                                        <option value="" disabled selected class="bg-adaptive text-main-area">Pick Slot</option>
+                                        <option value="" disabled selected>Pick Slot</option>
                                     </select>
                                     <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
                                         <svg class="w-3 h-3 text-main-area" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"/></svg>
@@ -131,7 +131,7 @@
             <div class="space-y-2">
                 <label class="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-2">New Time Slot</label>
                 <select id="reschedule_slot" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-main-area bg-adaptive border-adaptive focus:border-brand outline-none transition-all appearance-none cursor-pointer">
-                    <option value="" disabled selected class="bg-adaptive text-main-area">Pick Slot</option>
+                    <option value="" disabled selected>Pick Slot</option>
                 </select>
             </div>
             <div class="flex gap-4 pt-4">
@@ -173,7 +173,7 @@ async function loadSlots(trainerId) {
         const standardSlots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"];
         const res = await fetch(`/booked-slots/${trainerId}/${date}`);
         const bookedSlots = await res.json();
-        select.innerHTML = `<option value="" disabled selected class="bg-adaptive text-main-area">Pick Slot</option>`;
+        select.innerHTML = `<option value="" disabled selected>Pick Slot</option>`;
         standardSlots.forEach(slot => {
             const isBooked = bookedSlots.includes(slot);
             select.innerHTML += `<option value="${slot}" ${isBooked ? 'disabled' : ''} class="bg-adaptive ${isBooked ? 'text-gray-500' : 'text-main-area'}">${slot}${isBooked ? ' (Full ❌)' : ''}</option>`;
