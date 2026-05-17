@@ -24,7 +24,7 @@ class DietPlanController extends Controller
             }
         }
 
-        $profile = Auth::user()->profile;
+        $profile = Auth::check() ? Auth::user()->profile : null;
         $diets = DietPlan::all()->sortBy(function ($plan) use ($userGoal) {
             return $plan->goal === $userGoal ? 0 : 1;
         })->values();

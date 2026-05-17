@@ -17,7 +17,8 @@ use App\Http\Controllers\AdminBlogController;
 use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
-    return view('home');
+    $featuredWorkouts = \App\Models\WorkoutPlan::take(3)->get();
+    return view('home', compact('featuredWorkouts'));
 })->name('home');
 
 Route::get('/privacy', function () { return view('home'); })->name('privacy');
@@ -58,13 +59,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
-    // Workouts
-    Route::get('/workouts', [WorkoutPlanController::class, 'index'])->name('workouts.index');
-    Route::get('/workouts/{workout}', [WorkoutPlanController::class, 'show'])->name('workouts.show');
+    // Workouts (Action Routes only)
     Route::post('/workouts/{workout}/start', [WorkoutPlanController::class, 'start'])->name('workouts.start');
 
-    // Nutrition Hub
-    Route::get('/diets', [DietPlanController::class, 'index'])->name('diets.index');
+    // Nutrition Hub (Action Routes only)
     Route::post('/diets/{diet}/follow', [DietPlanController::class, 'follow'])->name('diets.follow');
     Route::get('/diets/{diet}/download', [DietPlanController::class, 'download'])->name('diets.download');
 
@@ -72,14 +70,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/progress', [ProgressController::class, 'index'])->name('progress.index');
     Route::post('/progress', [ProgressController::class, 'store'])->name('progress.store');
     Route::post('/progress/goal', [ProgressController::class, 'updateGoal'])->name('progress.goal.update');
-
-    // Elite Marketplace
-    Route::get('/trainers', [TrainerController::class, 'index'])->name('trainers.index');
-    Route::get('/search', [SearchController::class, 'index'])->name('search');
     
-    // Content Library
-    Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
-    Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
+    // 🏋️ Trainer Booking System (Conflict-Proof)
+    Route::post('/book-session', [TrainerSessionController::class, 'book'])->name('trainer.book');
+    Route::post('/reschedule-session/{id}', [TrainerSessionController::class, 'reschedule'])->name('trainer.reschedule');
+    Route::get('/booked-slots/{trainer}/{date}', [TrainerSessionController::class, 'getBookedSlots'])->name('trainer.slots');
+    Route::post('/cancel-session/{id}', [TrainerSessionController::class, 'cancel'])->name('trainer.cancel');
+    Route::get('/my-sessions', [TrainerSessionController::class, 'myBookings'])->name('trainer.my-bookings');
+});
 
     // 🏋️ Trainer Booking System (Conflict-Proof)
     Route::post('/book-session', [TrainerSessionController::class, 'book'])->name('trainer.book');
@@ -112,6 +110,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'getLatest']);
     });
 });
+
+// 🌐 Publicly Accessible Content Routes (View Only)
+Route::get('/workouts', [WorkoutPlanController::class, 'index'])->name('workouts.index');
+Route::get('/workouts/{workout}', [WorkoutPlanController::class, 'show'])->name('workouts.show');
+Route::get('/diets', [DietPlanController::class, 'index'])->name('diets.index');
+Route::get('/trainers', [TrainerController::class, 'index'])->name('trainers.index');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
 
 // 👑 Admin Control Panel
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

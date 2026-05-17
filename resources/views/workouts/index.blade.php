@@ -73,7 +73,7 @@
         @forelse($workouts as $index => $workout)
         @php
             $level = $workout->level ?? 'beginner';
-            $userPlan = Auth::user()->userPlans()->where('plan_id', $workout->id)->where('is_completed', false)->first();
+            $userPlan = Auth::check() ? Auth::user()->userPlans()->where('plan_id', $workout->id)->where('is_completed', false)->first() : null;
             $isActive = (bool)$userPlan;
             
             $currentDay = $userPlan ? $userPlan->current_day : 0;
