@@ -77,14 +77,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/booked-slots/{trainer}/{date}', [TrainerSessionController::class, 'getBookedSlots'])->name('trainer.slots');
     Route::post('/cancel-session/{id}', [TrainerSessionController::class, 'cancel'])->name('trainer.cancel');
     Route::get('/my-sessions', [TrainerSessionController::class, 'myBookings'])->name('trainer.my-bookings');
-});
-
-    // 🏋️ Trainer Booking System (Conflict-Proof)
-    Route::post('/book-session', [TrainerSessionController::class, 'book'])->name('trainer.book');
-    Route::post('/reschedule-session/{id}', [TrainerSessionController::class, 'reschedule'])->name('trainer.reschedule');
-    Route::get('/booked-slots/{trainer}/{date}', [TrainerSessionController::class, 'getBookedSlots'])->name('trainer.slots');
-    Route::post('/cancel-session/{id}', [TrainerSessionController::class, 'cancel'])->name('trainer.cancel');
-    Route::get('/my-sessions', [TrainerSessionController::class, 'myBookings'])->name('trainer.my-bookings');
 
     // API Internal Endpoints
     Route::prefix('api')->group(function () {
