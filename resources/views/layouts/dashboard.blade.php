@@ -73,13 +73,14 @@
 
             <!-- User Profile & Logout -->
             <div class="p-4 border-t border-border-col mt-auto bg-adaptive">
+                @auth
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-2 border border-gray-700/50 shadow-inner mb-3">
                     <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white font-bold text-sm shrink-0">
-                        {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-black text-main-area truncate leading-tight">{{ auth()->user()?->name ?? 'User' }}</p>
-                        <p class="text-[10px] text-gray-500 truncate font-bold uppercase tracking-widest mt-0.5">{{ auth()->user()?->email ?? '' }}</p>
+                        <p class="text-sm font-black text-main-area truncate leading-tight">{{ auth()->user()->name }}</p>
+                        <p class="text-[10px] text-gray-500 truncate font-bold uppercase tracking-widest mt-0.5">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
                 
@@ -90,6 +91,11 @@
                         Sign Out
                     </button>
                 </form>
+                @else
+                <a href="{{ route('login') }}" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-brand hover:bg-brand/5 border border-brand/20 transition-all duration-300 text-xs font-black uppercase tracking-widest">
+                    🔑 Sign In
+                </a>
+                @endauth
             </div>
         </aside>
 
@@ -115,6 +121,7 @@
                     {{-- 🔍 Search Bar Removed --}}
 
                     {{-- 🛎️ Notification Bell --}}
+                    @auth
                     <div class="relative">
                         <button @click="open = !open" class="w-10 h-10 rounded-xl bg-surface-2 border border-border-col flex items-center justify-center text-gray-400 hover:text-brand hover:border-brand/50 transition-all relative">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -156,6 +163,7 @@
                              <a href="#" class="block p-4 text-center text-[10px] font-black text-gray-400 hover:text-brand uppercase tracking-widest bg-white/5 bg-adaptive border-t border-adaptive">View All Activity</a>
                         </div>
                     </div>
+                    @endauth
 
                     {{-- ⚙️ Settings Dropdown (Theme/Accent/Mode) --}}
                     <div class="relative" x-data="{ openSettings: false }">
@@ -192,9 +200,15 @@
                         </div>
                     </div>
 
+                    @auth
                     <a href="{{ route('profile.index') }}" class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white font-bold text-sm hover:scale-110 active:scale-95 transition-all shadow-lg shadow-brand/20">
-                        {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </a>
+                    @else
+                    <a href="{{ route('login') }}" class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white font-bold text-sm hover:scale-110 active:scale-95 transition-all shadow-lg shadow-brand/20" title="Sign In">
+                        👤
+                    </a>
+                    @endauth
                 </div>
             </header>
 
