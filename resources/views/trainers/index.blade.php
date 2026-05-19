@@ -7,7 +7,7 @@
 <div class="space-y-12 fade-up">
     <!-- Marketplace Hero Header Banner -->
     <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl h-64 flex items-center bg-gray-950">
-        <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop" 
+        <img src="{{ asset('images/dashboard_hero.jpg') }}" 
              class="absolute inset-0 w-full h-full object-cover opacity-45 transform scale-105 hover:scale-100 transition-all duration-1000">
         <div class="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent"></div>
         <div class="relative z-10 px-8 lg:px-12 max-w-2xl space-y-4">
@@ -57,10 +57,10 @@
             @foreach($trainers as $trainer)
             @php
                 $bannerImage = match(true) {
-                    Str::contains(strtolower($trainer->specialization ?? ''), 'strength') => 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop',
-                    Str::contains(strtolower($trainer->specialization ?? ''), 'cardio') || Str::contains(strtolower($trainer->specialization ?? ''), 'hiit') => 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=400&auto=format&fit=crop',
-                    Str::contains(strtolower($trainer->specialization ?? ''), 'yoga') || Str::contains(strtolower($trainer->specialization ?? ''), 'mobility') => 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=400&auto=format&fit=crop',
-                    default => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=400&auto=format&fit=crop'
+                    Str::contains(strtolower($trainer->specialization ?? ''), 'strength') => asset('images/banner_strength.jpg'),
+                    Str::contains(strtolower($trainer->specialization ?? ''), 'cardio') || Str::contains(strtolower($trainer->specialization ?? ''), 'hiit') => asset('images/banner_hiit.jpg'),
+                    Str::contains(strtolower($trainer->specialization ?? ''), 'yoga') || Str::contains(strtolower($trainer->specialization ?? ''), 'mobility') => asset('images/banner_yoga.jpg'),
+                    default => asset('images/banner_generic.jpg')
                 };
             @endphp
             <div class="flex flex-col bg-gray-800 border border-gray-700 rounded-[2.5rem] overflow-hidden group hover:border-brand/40 transition-all duration-500 relative hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(34,197,94,0.1)] bg-adaptive border-adaptive">
@@ -81,7 +81,7 @@
                     <div class="flex items-end justify-between mb-6">
                         <div class="w-24 h-24 rounded-[2rem] border-4 border-gray-800 bg-gray-700 overflow-hidden shadow-2xl group-hover:scale-105 transition-transform duration-500">
                             @if($trainer->image)
-                                <img src="{{ Str::startsWith($trainer->image, ['http://', 'https://']) ? $trainer->image : asset('storage/' . $trainer->image) }}" class="w-full h-full object-cover">
+                                <img src="{{ Str::startsWith($trainer->image, ['http://', 'https://']) ? $trainer->image : (Str::startsWith($trainer->image, 'images/') ? asset($trainer->image) : asset('storage/' . $trainer->image)) }}" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-white font-black text-3xl bg-brand/20">
                                     {{ substr($trainer->user->name, 0, 1) }}

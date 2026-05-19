@@ -32,7 +32,7 @@
     @endphp
     @if($activeUserPlan && isset($activeUserPlan->workout_plan_id))
     <div class="relative bg-gradient-to-r from-brand to-brand-dark rounded-[2.5rem] p-8 shadow-xl shadow-brand/20 flex flex-col md:flex-row items-center justify-between gap-6 group overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop" 
+        <img src="{{ asset('images/dashboard_hero.jpg') }}" 
              class="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay group-hover:scale-105 transition-transform duration-700">
         <div class="relative z-10 flex items-center gap-6">
             <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white">
@@ -60,9 +60,9 @@
                         <div class="relative shrink-0">
                             @php
                                 $avatarUrl = match($user->gender) {
-                                    'male' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop',
-                                    'female' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
-                                    default => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'
+                                    'male' => asset('images/avatar_male.jpg'),
+                                    'female' => asset('images/avatar_female.jpg'),
+                                    default => asset('images/avatar_generic.jpg')
                                 };
                             @endphp
                             <div class="w-16 h-16 rounded-2xl border-2 border-brand/20 bg-gray-700 overflow-hidden shadow-xl bg-adaptive border-adaptive">

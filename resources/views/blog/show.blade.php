@@ -65,7 +65,7 @@
 
             <!-- Hero Image -->
             <div class="rounded-3xl overflow-hidden shadow-2xl border border-adaptive aspect-video">
-                <img src="{{ $post->image_url ?? 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1200&auto=format&fit=crop' }}" 
+                <img src="{{ Str::startsWith($post->image_url ?? '', ['http://', 'https://']) ? $post->image_url : asset($post->image_url ?? 'images/banner_generic.jpg') }}" 
                      class="w-full h-full object-cover" alt="{{ $post->title }}">
             </div>
 

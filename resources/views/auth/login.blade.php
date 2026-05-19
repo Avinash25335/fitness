@@ -5,7 +5,7 @@
     <!-- Left Panel - Branding -->
     <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-surface">
         <div class="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop"
+            <img src="{{ asset('images/login_bg.jpg') }}"
                  class="w-full h-full object-cover opacity-30" alt="Gym">
             <div class="absolute inset-0 bg-gradient-to-br from-brand/20 via-surface/60 to-surface"></div>
         </div>

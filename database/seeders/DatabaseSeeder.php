@@ -204,7 +204,7 @@ class DatabaseSeeder extends Seeder
                 'slug'        => 'science-of-protein',
                 'content'     => "Protein is the most important macronutrient for anyone looking to build muscle or lose fat. The research consistently shows that most active individuals need between 1.6 and 2.2 grams of protein per kilogram of bodyweight per day.\n\nWhy is protein so important?\n\nProtein provides the amino acids your body needs to repair and build muscle tissue after training. Without adequate protein, even the best workout programme in the world will fail to produce the results you're looking for.\n\nThe best protein sources:\n- Chicken breast (31g per 100g)\n- Lean beef (26g per 100g)\n- Eggs (13g per 100g)\n- Greek yogurt (10g per 100g)\n- Lentils (9g per 100g)\n\nTiming also matters. Consuming 20–40g of protein within 2 hours after training can significantly enhance muscle protein synthesis.",
                 'category'    => 'nutrition',
-                'image_url'   => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop',
+                'image_url'   => 'images/blog_protein.jpg',
                 'published_at'=> now()->subDays(2),
             ],
             [
@@ -212,7 +212,7 @@ class DatabaseSeeder extends Seeder
                 'slug'        => 'progressive-overload',
                 'content'     => "Progressive overload is the single most important principle in strength training. It simply means doing a little more over time — more weight, more reps, or more sets.\n\nWithout progressive overload, your muscles have no reason to grow. Your body adapts to stress quickly, and once it adapts, growth stops.\n\nHow to apply it:\n1. Add 2.5kg to the bar every week on compound lifts.\n2. Add one extra rep per set each session.\n3. Reduce rest periods to increase workout density.\n4. Add an extra set to your key exercises every 2 weeks.\n\nTrack every workout in a log. What gets measured gets improved.",
                 'category'    => 'training',
-                'image_url'   => 'https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?q=80&w=800&auto=format&fit=crop',
+                'image_url'   => 'images/blog_overload.jpg',
                 'published_at'=> now()->subDays(5),
             ],
             [
@@ -220,7 +220,7 @@ class DatabaseSeeder extends Seeder
                 'slug'        => 'sleep-recovery',
                 'content'     => "Most athletes spend hours obsessing over workouts and nutrition but completely neglect the most powerful recovery tool available: sleep.\n\nDuring deep sleep, your body releases 70% of its daily growth hormone. This is when muscles are repaired, glycogen is restored, and the nervous system recovers from training stress.\n\nPractical sleep optimisation tips:\n- Set a consistent bedtime and wake time, even on weekends.\n- Keep your bedroom cold (18–20°C is optimal).\n- Avoid screens for 60 minutes before bed.\n- No caffeine after 2pm.\n- Aim for 7–9 hours of uninterrupted sleep.\n\nEven one night of poor sleep can reduce testosterone by 10–15% and impair strength by up to 20%.",
                 'category'    => 'recovery',
-                'image_url'   => 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=800&auto=format&fit=crop',
+                'image_url'   => 'images/blog_sleep.jpg',
                 'published_at'=> now()->subDays(8),
             ],
         ];
@@ -246,7 +246,7 @@ class DatabaseSeeder extends Seeder
                 'bio' => 'NSCA-certified strength coach with 10+ years helping athletes build serious muscle and power. Former competitive powerlifter.',
                 'hourly_rate' => 60,
                 'experience' => 10,
-                'image' => 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=600&auto=format&fit=crop',
+                'image' => 'images/trainer_marcus.jpg',
             ],
             [
                 'name' => 'Sarah Jenkins',
@@ -255,7 +255,7 @@ class DatabaseSeeder extends Seeder
                 'bio' => 'Passionate about helping you burn fat and build endurance. I specialise in high-intensity circuit training that gets results fast.',
                 'hourly_rate' => 45,
                 'experience' => 6,
-                'image' => 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?q=80&w=600&auto=format&fit=crop',
+                'image' => 'images/trainer_sarah.jpg',
             ],
             [
                 'name' => 'David Chen',
@@ -264,7 +264,7 @@ class DatabaseSeeder extends Seeder
                 'bio' => 'Registered Yoga Teacher (RYT-500) focused on functional mobility, injury prevention, and mindful movement.',
                 'hourly_rate' => 55,
                 'experience' => 8,
-                'image' => 'https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=600&auto=format&fit=crop',
+                'image' => 'images/trainer_david.jpg',
             ],
         ];
 

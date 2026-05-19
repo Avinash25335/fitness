@@ -33,7 +33,7 @@
     <div class="relative group">
         <a href="{{ route('blog.show', $featuredPost) }}" class="flex flex-col lg:flex-row bg-gray-800 border border-gray-700 rounded-3xl overflow-hidden hover:border-brand/30 hover:shadow-2xl hover:shadow-brand/5 transition-all duration-500 bg-adaptive border-adaptive shadow-xl">
             <div class="lg:w-7/12 h-[300px] lg:h-[450px] overflow-hidden relative">
-                <img src="{{ $featuredPost->image_url ?? 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1200&auto=format&fit=crop' }}" 
+                <img src="{{ Str::startsWith($featuredPost->image_url, ['http://', 'https://']) ? $featuredPost->image_url : asset($featuredPost->image_url) }}" 
                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt="{{ $featuredPost->title }}">
                 <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60"></div>
                 <div class="absolute top-6 left-6">
@@ -78,7 +78,7 @@
             @foreach($posts as $post)
             <a href="{{ route('blog.show', $post) }}" class="flex flex-col bg-gray-800 border border-gray-700 rounded-3xl overflow-hidden hover:border-brand/30 hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand/5 transition-all duration-500 group bg-adaptive border-adaptive shadow-lg">
                 <div class="h-56 relative overflow-hidden shrink-0">
-                    <img src="{{ $post->image_url ?? 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=600&auto=format&fit=crop' }}" 
+                    <img src="{{ Str::startsWith($post->image_url ?? '', ['http://', 'https://']) ? $post->image_url : asset($post->image_url ?? 'images/banner_generic.jpg') }}" 
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $post->title }}">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent"></div>
                     <div class="absolute top-4 left-4">
