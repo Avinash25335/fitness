@@ -5,6 +5,23 @@
 
 @section('content')
 <div class="space-y-12 fade-up">
+    <!-- Marketplace Hero Header Banner -->
+    <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl h-64 flex items-center bg-gray-950">
+        <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop" 
+             class="absolute inset-0 w-full h-full object-cover opacity-45 transform scale-105 hover:scale-100 transition-all duration-1000">
+        <div class="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent"></div>
+        <div class="relative z-10 px-8 lg:px-12 max-w-2xl space-y-4">
+            <span class="bg-brand/10 border border-brand/30 text-brand text-[9px] font-black uppercase tracking-widest px-4.5 py-1.5 rounded-full bg-adaptive">
+                🛡️ Elite Marketplace
+            </span>
+            <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tighter leading-none">
+                Transform Your Potential with <span class="text-brand">Elite Certified Coaches</span>
+            </h1>
+            <p class="text-xs text-gray-400 font-bold leading-relaxed max-w-lg">
+                1-on-1 private training, customized workout programming, and real-time performance coaching from the world's leading fitness experts.
+            </p>
+        </div>
+    </div>
     
     <!-- My Bookings Dynamic Section -->
     <div class="bg-gray-800 border border-gray-700 rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-10 relative overflow-hidden group bg-adaptive border-adaptive shadow-xl">
@@ -38,6 +55,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             @foreach($trainers as $trainer)
+            @php
+                $bannerImage = match(true) {
+                    Str::contains(strtolower($trainer->specialization ?? ''), 'strength') => 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop',
+                    Str::contains(strtolower($trainer->specialization ?? ''), 'cardio') || Str::contains(strtolower($trainer->specialization ?? ''), 'hiit') => 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=400&auto=format&fit=crop',
+                    Str::contains(strtolower($trainer->specialization ?? ''), 'yoga') || Str::contains(strtolower($trainer->specialization ?? ''), 'mobility') => 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=400&auto=format&fit=crop',
+                    default => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=400&auto=format&fit=crop'
+                };
+            @endphp
             <div class="flex flex-col bg-gray-800 border border-gray-700 rounded-[2.5rem] overflow-hidden group hover:border-brand/40 transition-all duration-500 relative hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(34,197,94,0.1)] bg-adaptive border-adaptive">
                 @if(($trainer->rating ?? 4.8) >= 4.8)
                     <div class="absolute top-6 right-6 z-20">
@@ -47,7 +72,10 @@
                     </div>
                 @endif
 
-                <div class="h-32 bg-gradient-to-br from-brand to-brand-dark opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                <div class="h-32 relative overflow-hidden bg-gray-950">
+                    <img src="{{ $bannerImage }}" class="w-full h-full object-cover opacity-20 group-hover:opacity-35 group-hover:scale-110 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-800 to-transparent bg-adaptive"></div>
+                </div>
                 
                 <div class="px-8 pb-8 -mt-16 flex flex-col h-full relative z-10">
                     <div class="flex items-end justify-between mb-6">

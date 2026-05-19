@@ -31,8 +31,10 @@
         };
     @endphp
     @if($activeUserPlan && isset($activeUserPlan->workout_plan_id))
-    <div class="bg-gradient-to-r from-brand to-brand-dark rounded-[2.5rem] p-8 shadow-xl shadow-brand/20 flex flex-col md:flex-row items-center justify-between gap-6 group">
-        <div class="flex items-center gap-6">
+    <div class="relative bg-gradient-to-r from-brand to-brand-dark rounded-[2.5rem] p-8 shadow-xl shadow-brand/20 flex flex-col md:flex-row items-center justify-between gap-6 group overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop" 
+             class="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay group-hover:scale-105 transition-transform duration-700">
+        <div class="relative z-10 flex items-center gap-6">
             <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white">
                 <svg class="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
             </div>
@@ -41,7 +43,7 @@
                 <p class="text-white/80 text-xs font-bold uppercase tracking-widest mt-1">{{ $goalMsg }}</p>
             </div>
         </div>
-        <a href="{{ route('workouts.show', $activeUserPlan->workout_plan_id) }}" onclick="this.innerText='Loading...'" class="bg-white text-brand px-10 py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl active:scale-95 flex items-center gap-3">
+        <a href="{{ route('workouts.show', $activeUserPlan->workout_plan_id) }}" onclick="this.innerText='Loading...'" class="relative z-10 bg-white text-brand px-10 py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl active:scale-95 flex items-center gap-3">
             ▶ Resume Workout
     </div>
     @endif
@@ -54,9 +56,21 @@
             </div>
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div class="space-y-6">
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center text-brand border border-brand/20 shadow-inner bg-adaptive">
-                            <span class="text-3xl font-black" id="levelDisplay">{{ $user->stat?->level ?? 1 }}</span>
+                    <div class="flex items-center gap-5">
+                        <div class="relative shrink-0">
+                            @php
+                                $avatarUrl = match($user->gender) {
+                                    'male' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop',
+                                    'female' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
+                                    default => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'
+                                };
+                            @endphp
+                            <div class="w-16 h-16 rounded-2xl border-2 border-brand/20 bg-gray-700 overflow-hidden shadow-xl bg-adaptive border-adaptive">
+                                <img src="{{ $avatarUrl }}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-brand text-white border-2 border-gray-800 flex items-center justify-center text-[8px] font-black shadow-lg" title="Current Level" id="levelDisplay">
+                                Lvl{{ $user->stat?->level ?? 1 }}
+                            </div>
                         </div>
                         <div>
                             <h2 class="text-3xl font-black text-main-area tracking-tighter">Welcome, {{ $user->name }}</h2>
