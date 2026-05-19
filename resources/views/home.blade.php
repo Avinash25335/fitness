@@ -5,24 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitnessPro — Your Ultimate Fitness Platform</title>
     <meta name="description" content="Track workouts, follow personalised diet plans, and achieve your fitness goals with FitnessPro.">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand': '#22c55e',
-                        'brand-dark': '#16a34a',
-                        'brand-orange': '#f97316',
-                        'surface': '#111827',
-                        'surface-2': '#1f2937',
-                        'border-col': '#374151',
-                    },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { scroll-behavior: smooth; }

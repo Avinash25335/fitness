@@ -13,7 +13,7 @@ class Booking extends Model
         'user_id',
         'trainer_id',
         'date',
-        'time_slot',
+        'slot',
         'status',
     ];
 

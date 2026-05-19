@@ -18,7 +18,7 @@ class TrainerController extends Controller
         $myBookings = Booking::with('trainer.user')
             ->where('user_id', Auth::id())
             ->orderBy('date', 'desc')
-            ->orderBy('time_slot', 'desc')
+            ->orderBy('slot', 'desc')
             ->get();
             
         return view('trainers.index', compact('trainers', 'myBookings'));

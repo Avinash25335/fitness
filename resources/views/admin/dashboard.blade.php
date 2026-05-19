@@ -50,7 +50,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-white">{{ $booking->user->name ?? '—' }}</p>
-                    <p class="text-xs text-gray-500">with {{ $booking->trainer->user->name ?? 'Trainer' }} · {{ $booking->date }} {{ $booking->time_slot }}</p>
+                    <p class="text-xs text-gray-500">with {{ $booking->trainer->user->name ?? 'Trainer' }} · {{ $booking->date }} {{ $booking->slot }}</p>
                 </div>
                 <span class="text-xs font-semibold px-2.5 py-1 rounded-full {{ $booking->status === 'confirmed' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' }}">
                     {{ ucfirst($booking->status ?? 'pending') }}
